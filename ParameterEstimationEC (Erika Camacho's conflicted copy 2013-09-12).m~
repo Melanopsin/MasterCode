@@ -1,0 +1,92 @@
+
+function ParameterEstimationEC
+%** Description of the program **
+% This program is an implementation for estimating a set of parameters
+% from the average of a stochastic output model
+% via the least squares approach
+%** Input variables **
+% None
+%** Output variables **
+% None
+
+clc       % Clear the display in the command window.
+close all % Clear all stored variables from the Workspace.
+clear all % Close all figures.
+
+% Auxiliary parameters
+MaxNumIter = 10; %Maximum number of iterations
+TOL = 10^(-5); %Tolerance you want for your estimation
+
+%** Model parameters **
+load(calciumimaging.mat)
+K=
+gamma = 1.0;       %
+q = [beta gamma]'; %
+p = length(q);     %
+
+%** Independent variables **
+% Time in days
+tMin = 0.0;        % lower bound for the time
+dt = 1;            % step size
+tMax = 10;         % upper bound for the time; this should agree with the
+% upper t-value of the stochastic output
+t = [tMin:dt:tMax]';   % time vector t
+%s = [tMin:1:tMax]';    % time vector s
+n = length(t); % Total number of points in t
+%ptsInsVec = length(s); % Total number of points in s
+
+
+%*********************** General Least Square *****************************
+
+numIter = 0;  % counter
+
+q_opt = ones(p,1); %initial guess for optium parameters, we can set to rand(p,1)
+%q = q_opt;
+
+%w = ones(n,1);
+
+%** Auxiliary vectors **
+convergence = [];
+KnownData=[] %data
+
+% options=optimset('Algorithm','trust-region-reflective','tolfun',10^-6,'TolX',10^-6,'MaxFunEvals',1000,'MaxIter',1000);
+% 'active-set', 'interior-point', 'sqp', 'trust-region-reflective'
+
+% options=optimset('tolfun',10^-6,'TolX',10^-6,'MaxFunEvals',100,'MaxIter',100);
+
+while(numIter == 0 | ((norm(q - q_opt) >= TOL) & (numIter < MaxNumIter)))  % do / while
+    
+    q = q_opt;  %q gets updated with the optimal current guess
+    
+    [q_opt] = fminsearch(@Get_Error,q);
+    
+    % write q_opt to the data file
+    
+    Error = Get_Error(KnownData);  %this is a function that has or gets the avg of the stochastic
+    %** Output **
+    
+    numIter = numIter + 1;
+    
+    convergence = [convergence; norm(q - q_opt)];
+    
+    figure(2)
+    plot([1:1:numIter],convergence,'o');
+    xlabel('Number of iterations')
+    xlim([0 numIter]);
+    ylabel('Convergence')
+    
+    
+end % end while
+
+%**************************************************************************
+
+% write q_opt to the data file
+
+
+
+% disp('q_opt = '), disp(q_opt)
+%disp('Parameter estimates:')
+%disp(['beta = ',num2str(q(1))])
+%disp(['gamma = ',num2str(q(2))])
+
+
