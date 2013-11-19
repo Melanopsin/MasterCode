@@ -33,8 +33,8 @@ switch dataset
     
     case 0
         
-        %load('comparetoephys.mat')
-        load('calciumimaging.mat')
+        load('comparetoephys.mat')
+        %load('calciumimaging.mat')
         
     case 1
         
