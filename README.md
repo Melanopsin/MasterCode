@@ -1,4 +1,4 @@
-MasterCode
+WorkingCode
 ==========
 
-This is the code as it is right now
+This is the code to be altered
