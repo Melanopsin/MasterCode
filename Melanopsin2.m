@@ -1,82 +1,47 @@
-%Melanopsin2 will run a single run of the same code found in melanopsin.m
+% Melanopsin2 will run a single run of the same code found in melanopsin.m
 
 function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
 
 % MODEL OF MELANOPSIN ACTIVATION
 
-% M0* + G.GDP <-- kG1/kG2 --> M0*.G.GDP
-% M0*.G.GDP -- kG3 --> M0*.G + GDP
-% M0*.G + GTP -- kG4 --> M0*.G.GTP
-% M0*.G.GTP -- kG5 --> M0* + Ga.GTP + Gbg
+% Mn* + G.GDP <-- kG1 y(n)/kG2 --> Mn*.G.GDP
+% Mn*.G.GDP -- kG3 --> Mn*.G + GDP
+% Mn*.G + GTP -- kG4 --> Mn*.G.GTP
+% Mn*.G.GTP -- kG5 --> Mn* + Ga.GTP + Gbg
 % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-% PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
-% PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
-% Ga.GDP + Gbg -- kI3 --> G.GDP
+% PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
 % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
-% SecM + Channel- -- kC --> SecM.Channel+
-
-
-% % for runnum = 1:totrun
-% %     
-% %     clear t;
-% %     clear M; 
-% %     clear X;
-% %     clear tout;
+% SecM -- delta --> 0
+% SecM + Channel+ <-- kO/kC --> SecM.Channel-
+% Mn* + K <-- kK1/kK2 --> Mn*.K
+% Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
+% Mn* + ArrB1 -- kK4 w(n) --> Mn*.ArrB1
+% Mn* + ArrB2 -- kK5 w(n) --> Mn*.ArrB2
 
 
 % case 0 --- calcium imaging data
-
+% case 1 --- electrophysiology data
 max_chan = 0;
 maxchan_time = 0;
 
-switch dataset
-    
-    case 0
-        
-        %load('comparetoephys.mat')
-        load('calciumimaging.mat')
-        
+switch dataset    
+    case 0        
+        load('comparetoephys.mat')
     case 1
-        
-        load('incompleteset.mat')
-        
-    otherwise
-        
- end
-
-
-
-% % kG1 = 1;
-% % kG2 = 2;
-% % kG3 = 1;
-% % kG4 = 1;
-% % kG5 = 1;
-% % kp = 2;
-% % kI = 1;
-% % kS = 1;
-% % kO = 2;
-% % kC = 3;
-% % kk1 = 2;
-% % kk2 = 4;
-% % kk3 = 1;
-% % kk4 = 1;
-% % kk5 = 1;
-
+        load('incompleteset.mat')      
+    otherwise        
+end
 
 %% SPECIES: X = [
 %% X(1)           G.GDP
-%% X(2)           G.GTP
-%% X(3)           Ga.GTP
-%% X(4)           Gbg
-%% X(5)           PLC
-%% X(6)           PLC*.Ga.GTP
-%% X(7)           PLC.Ga.GDP
-%% X(8)           Ga.GDP
-%% X(9)           G.GDP
-%% X(10)          PIP2
-%% X(11)          SecM
-%% X(12)          Channel-
-%% X(13)          SecM.Channel+ ];
+%% X(2)           Ga.GTP
+%% X(3)           Gbg
+%% X(4)           PLC
+%% X(5)           PLC*.Ga.GTP
+%% X(6)           SecM      
+%% X(7)           Channel-
+%% X(8)           SecM.Channel+  ];
+
 
 %% MELANOPSIN COMPLEXES: M = [
 %% M(1)                        M0*
@@ -128,48 +93,32 @@ switch dataset
 %% M(47)                       M6*.ArrB2 ];
 
 
-
-
-t = 0; %%X = zeros(1,13); M = zeros(1,47); M(1) = 100; X(1) = 100;
-tmax = 3; % I changed from 30
+t = 0;
+tmax = 15;
 tcrit = 0.1*tmax;
 tracker =0;
 tracker2 = 0;
 counter =1;
 maxcounter=10000000;
 tic;
-%% Numbers of arrestin b1 and b2
 
-%%arrb1 = 10;
-%%arrb2 = 10;
+K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...    
+       kP,       kI,    kS*PIP2,         kO,         kC, ...
+   kk1*Ki,      kk2,    kk3*ATP,  kk4*Arrb1,  kk5*Arrb2, ...
+     kmax,       KM ];
+%%  K(1),    K(2),     K(3),      K(4),     K(5), 
+%%  K(6),    K(7),     K(8),      K(9),    K(10),
+%% K(11),   K(12),    K(13),     K(14),    K(15),  
+%% K(16),   K(17)
 
-K = [
-    kG1,   %K(1)
-    kG2,   %K(2)
-    kG3,   %K(3)
-    kG4,   %K(4)
-    kG5,   %K(5)
-    kp,    %K(6)
-    kI,    %K(7)
-    kS,    %K(8)
-    kO,    %K(9)
-    kC,    %K(10)
-    kk1,   %K(11)
-    kk2,   %K(12)
-    kk3,   %K(13)
-    kk4*arrb1,   %K(14)
-    kk5*arrb2 ]; %K(15)
+no_rxns = 73;                   % number of reactions (total)
+h = zeros(no_rxns,1);           % initialize the hazard vector
 
-
-
-no_rxns = 72;  % number of reactions (total)
-h = zeros(no_rxns,1);
-
-%keyboard;
-tstore(1,1) = t;
-Xstore(1,:) = X; 
-Mstore(1,:) = M;
-ttstore (counter) = 0;
+% clears out the variables for the outfile
+tstore(1,1) = t;                % stores time
+Xstore(1,:) = X;                % stores time 
+Mstore(1,:) = M;                % stores time
+ttstore (1) = 0;
 
 %% Build function to account for increase in arrestin binding affinity
 %% with more phosphates bound to melanopsin carboxyl tail.
@@ -181,22 +130,14 @@ W = @(n) 1-exp(-n*10);
 
 Y = @(n) exp(-n);
 
+%% Begin the algorithm
+
 for counter=1:maxcounter
+    % check if the final time has been reached or exceeded
     if t>tmax
         break;
     end
     
-    t;
-    % plot_matrx(counter,:) = [t X M];
-    if t> tcrit && tracker==0
-        %%kC = 5*kC;
-        tracker=1;
-    end
-    
-    if X(12) == 0 && tracker2 ==0
-        kS = 0.00*kS;
-        tracker2=1;
-    end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -204,41 +145,28 @@ for counter=1:maxcounter
  % use cell #'s to construct hazards for the current time step
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%
-
-    % Melanopsin activation
-
-    % M0 -- kL/h(nu) --> M0*
+% G-Protein Activation
     
-    % Don't have an equation here yet. We decided not to use one are we
-    % changing that now?
-
-    % G-Protein Activation
-    
-    % M0* + G.GDP -- kG1 --> M0*.G.GDP
+    % M0* + G.GDP -- kG1*y(n) --> M0*.G.GDP
     h(1)  = Y(0)*K(1)*M(1)*X(1);    
     % And now for the other phosphorylated species
     h(6)  = Y(1)*K(1)*M(6)*X(1);
     h(11) = Y(2)*K(1)*M(13)*X(1);
     h(16) = Y(3)*K(1)*M(20)*X(1);
-    % Are we only going up to 3 phosphorylations?
     h(21) = Y(4)*K(1)*M(27)*X(1);
     h(26) = Y(5)*K(1)*M(34)*X(1);
     h(31) = Y(6)*K(1)*M(41)*X(1);
 
-
     % M0*.G.GDP -- kG2 --> M0* + G.GDP
-    h(2)  = Y(0)*K(2)*M(2);         
+    h(2)  = K(2)*M(2);         
     % And now for the other phosphorylated species
-    h(7)  = Y(1)*K(2)*M(7);
-    h(12) = Y(2)*K(2)*M(14);
-    h(17) = Y(3)*K(2)*M(21);
-    % Are we only going up to 3 phosphorylations?
-    h(22) = Y(4)*K(2)*M(28);
-    h(27) = Y(5)*K(2)*M(35);
-    h(32) = Y(6)*K(2)*M(42);
-
+    h(7)  = K(2)*M(7);
+    h(12) = K(2)*M(14);
+    h(17) = K(2)*M(21);
+    h(22) = K(2)*M(28);
+    h(27) = K(2)*M(35);
+    h(32) = K(2)*M(42);
 
     % M0*.G.GDP -- kG3 --> M0*.G + GDP
     h(3)  = K(3)*M(2);  
@@ -246,12 +174,9 @@ for counter=1:maxcounter
     h(8)  = K(3)*M(7);
     h(13) = K(3)*M(14);
     h(18) = K(3)*M(21);
-    % Are we only going up to 3 phosphorylations?
     h(23) = K(3)*M(28);
     h(28) = K(3)*M(35);
     h(33) = K(3)*M(42);
-
-
 
     % M0*.G + GTP -- kG4 --> M0*.G.GTP
     h(4)  = K(4)*M(3);        
@@ -259,11 +184,9 @@ for counter=1:maxcounter
     h(9)  = K(4)*M(8);
     h(14) = K(4)*M(15);
     h(19) = K(4)*M(22);
-    % Are we only going up to 3 phosphorylations?
     h(24) = K(4)*M(29);
     h(29) = K(4)*M(36);
     h(34) = K(4)*M(43);
-
 
     % M0*.G.GTP -- kG5 --> M0* + Ga.GTP + Gbg
     h(5)  = K(5)*M(4);         
@@ -271,7 +194,6 @@ for counter=1:maxcounter
     h(10) = K(5)*M(9);
     h(15) = K(5)*M(16);
     h(20) = K(5)*M(23);
-    % Are we only going up to 3 phosphorylations?
     h(25) = K(5)*M(30);
     h(30) = K(5)*M(37);
     h(35) = K(5)*M(44);
@@ -279,23 +201,20 @@ for counter=1:maxcounter
 %%
 % PLC and G-protein activation/inactivation
     
-    h(36) = X(3)*X(5);         % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-    h(37) = X(4)*X(6);         % PLC*.Ga.GTP -- kI --> PLC + Gbg + G.GDP
+    h(36) = K(6)*X(4)*X(2);         % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
+    h(37) = K(7)*X(5)*X(3);         % PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
                                     
-
 %%
 % Second Messenger Creation
     
-    h(38) = K(8)*X(6)*X(10);        % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
+    h(38) = K(8)*X(5);              % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
     
-
 %%
 % Channel Opening/Closing
     
-    h(39) = K(9)*X(11)*X(12);       % SecM + Channel- -- kO --> SecM.Channel+
-    h(40) = K(10)*X(13);            % SecM.Channel+ -- kC --> The Ether
+    h(39) = K(9)*X(6)*X(7);         % SecM + Channel- -- kO --> SecM.Channel+
+    h(40) = K(10)*X(8);             % SecM.Channel+ -- kC --> SecM + Channel-
     
-
 %%
 % Kinase Phosphorylation
     
@@ -326,33 +245,34 @@ for counter=1:maxcounter
     h(59) = K(11)*M(41);            % M6* + K -- kk1 --> M6*K 
     h(60) = K(12)*M(45);            % M6*K -- kk2 --> M6* + K
     
-
 %%
 % Arrestin Binding
     
-    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kb1 --> M1*ArrB1
-    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kb2 --> M1*ArrB2
-    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kb1 --> M2*ArrB1
-    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kb2 --> M2*ArrB2
+    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kk4*w(n) --> M1*ArrB1
+    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kk5*w(n) --> M1*ArrB2
+    
+    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kk4*w(n) --> M2*ArrB1
+    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kk5*w(n) --> M2*ArrB2
 
-    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kb1 --> M3*ArrB1
-    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kb2 --> M3*ArrB2
+    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kk4*w(n) --> M3*ArrB1
+    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kk5*w(n) --> M3*ArrB2
     
-    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kb1 --> M4*ArrB1
-    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kb2 --> M4*ArrB2
+    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kk4*w(n) --> M4*ArrB1
+    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kk5*w(n) --> M4*ArrB2
     
-    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kb1 --> M5*ArrB1
-    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kb2 --> M5*ArrB2
+    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kk4*w(n) --> M5*ArrB1
+    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kk5*w(n) --> M5*ArrB2
     
-    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kb1 --> M6*ArrB1
-    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kb2 --> M6*ArrB2
-    
-
+    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kk4*w(n) --> M6*ArrB1
+    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kk5*w(n) --> M6*ArrB2
+        
+%%
+% SecM degradation
+    h(73) = kmax*X(6)/(X(6)+KM);    % SecM -- delta --> 0, delta = kmax*SecM/(SecM+KM)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%
 % now turn the hazards into percentages with hw
@@ -368,322 +288,319 @@ for counter=1:maxcounter
     
     % based on r, make a decision
     % Using M0
-    if 0 <= r && r < hw(1)
-        M(1) = M(1) - 1;            % - M0*
-        X(1) = X(1) - 1;            % - G.GDP
-        M(2) = M(2) + 1;            % + M0*.G.GDP
-    elseif hw(1) < r && r < sum(hw(1:2))
-        M(2) = M(2) - 1;            % - M0*.G.GDP
-        M(1) = M(1) + 1;            % + M0* 
-        X(1) = X(1) + 1;            % + G.GDP  
-    elseif sum(hw(1:2)) < r && r < sum(hw(1:3))
-        M(2) = M(2) - 1;            % - M0*G.GDP
-        M(3) = M(3) + 1;            % + M0*G
-    elseif sum(hw(1:3)) < r && r < sum(hw(1:4))
-        M(3) = M(3) - 1;            % - M0*G
-        M(4) = M(4) + 1;            % + M0*G.GTP
-    elseif sum(hw(1:4)) < r && r < sum(hw(1:5))
+    if 0 <= r && r <= hw(1)
+        M(1) = M(1) - 1;           
+        X(1) = X(1) - 1;           
+        M(2) = M(2) + 1;           
+    elseif hw(1) < r && r <= sum(hw(1:2))
+        M(2) = M(2) - 1;            
+        M(1) = M(1) + 1;           
+        X(1) = X(1) + 1;           
+    elseif sum(hw(1:2)) < r && r <= sum(hw(1:3))
+        M(2) = M(2) - 1;           
+        M(3) = M(3) + 1;         
+    elseif sum(hw(1:3)) < r && r <= sum(hw(1:4))
+        M(3) = M(3) - 1;           
+        M(4) = M(4) + 1;           
+    elseif sum(hw(1:4)) < r && r <= sum(hw(1:5))
         M(4) = M(4) - 1;
         M(1) = M(1) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % using M1
-    elseif sum(hw(1:5)) < r && r < sum(hw(1:6))
+    elseif sum(hw(1:5)) < r && r <= sum(hw(1:6))
         M(6) = M(6) - 1;
         X(1) = X(1) - 1;
         M(7) = M(7) + 1;
-    elseif sum(hw(1:6)) < r && r < sum(hw(1:7))
+    elseif sum(hw(1:6)) < r && r <= sum(hw(1:7))
         M(7) = M(7) - 1;
         M(6) = M(6) + 1;
         X(1) = X(1) + 1;
-    elseif sum(hw(1:7)) < r && r < sum(hw(1:8))
+    elseif sum(hw(1:7)) < r && r <= sum(hw(1:8))
         M(7) = M(7) - 1;
         M(8) = M(8) + 1;
-    elseif sum(hw(1:8)) < r && r < sum(hw(1:9))
+    elseif sum(hw(1:8)) < r && r <= sum(hw(1:9))
         M(8) = M(8) - 1;
         M(9) = M(9) + 1;
-    elseif sum(hw(1:9)) < r && r < sum(hw(1:10))
+    elseif sum(hw(1:9)) < r && r <= sum(hw(1:10))
         M(9) = M(9) - 1;
         M(6) = M(6) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % using M2
-    elseif sum(hw(1:10)) < r && r < sum(hw(1:11))
+    elseif sum(hw(1:10)) < r && r <= sum(hw(1:11))
         M(13) = M(13) - 1;
         X(1) = X(1) - 1;
         M(14) = M(14) + 1;
-    elseif sum(hw(1:11)) < r && r < sum(hw(1:12))
+    elseif sum(hw(1:11)) < r && r <= sum(hw(1:12))
         M(14) = M(14) - 1;
         M(13) = M(13) + 1;
         X(1) = X(1) + 1;
-    elseif sum(hw(1:12)) < r && r < sum(hw(1:13))
+    elseif sum(hw(1:12)) < r && r <= sum(hw(1:13))
         M(14) = M(14) - 1;
         M(15) = M(15) + 1;
-    elseif sum(hw(1:13)) < r && r < sum(hw(1:14))
+    elseif sum(hw(1:13)) < r && r <= sum(hw(1:14))
         M(15) = M(15) - 1;
         M(16) = M(16) + 1;
-    elseif sum(hw(1:14)) < r && r < sum(hw(1:15))
+    elseif sum(hw(1:14)) < r && r <= sum(hw(1:15))
         M(16) = M(16) - 1;
         M(13) = M(13) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % using M3
-    elseif sum(hw(1:15)) < r && r < sum(hw(1:16))
+    elseif sum(hw(1:15)) < r && r <= sum(hw(1:16))
         M(20) = M(20) - 1;
         X(1) = X(1) - 1;
         M(21) = M(21) + 1;
-    elseif sum(hw(1:16)) < r && r < sum(hw(1:17))
+    elseif sum(hw(1:16)) < r && r <= sum(hw(1:17))
         M(21) = M(21) - 1;
         M(20) = M(20) + 1;
         X(1) = X(1) + 1;
-    elseif sum(hw(1:17)) < r && r < sum(hw(1:18))
+    elseif sum(hw(1:17)) < r && r <= sum(hw(1:18))
         M(21) = M(21) - 1;
         M(22) = M(22) + 1;
-    elseif sum(hw(1:18)) < r && r < sum(hw(1:19))
+    elseif sum(hw(1:18)) < r && r <= sum(hw(1:19))
         M(22) = M(22) - 1;
         M(23) = M(23) + 1;
-    elseif sum(hw(1:19)) < r && r < sum(hw(1:20))
+    elseif sum(hw(1:19)) < r && r <= sum(hw(1:20))
         M(23) = M(23) - 1;
         M(20) = M(20) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % using M4
-    elseif sum(hw(1:20)) < r && r < sum(hw(1:21))
+    elseif sum(hw(1:20)) < r && r <= sum(hw(1:21))
         M(27) = M(27) - 1;
         X(1) = X(1) - 1;
         M(28) = M(28) + 1;
-    elseif sum(hw(1:21)) < r && r < sum(hw(1:22))
+    elseif sum(hw(1:21)) < r && r <= sum(hw(1:22))
         M(28) = M(28) - 1;
         M(27) = M(27) + 1;
         X(1) = X(1) + 1;
-    elseif sum(hw(1:22)) < r && r < sum(hw(1:23))
+    elseif sum(hw(1:22)) < r && r <= sum(hw(1:23))
         M(28) = M(28) - 1;
         M(29) = M(29) + 1;
-    elseif sum(hw(1:23)) < r && r < sum(hw(1:24))
+    elseif sum(hw(1:23)) < r && r <= sum(hw(1:24))
         M(29) = M(29) - 1;
         M(30) = M(30) + 1;
-    elseif sum(hw(1:24)) < r && r < sum(hw(1:25))
+    elseif sum(hw(1:24)) < r && r <= sum(hw(1:25))
         M(30) = M(30) - 1;
         M(27) = M(27) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % using M5
-    elseif sum(hw(1:25)) < r && r < sum(hw(1:26))
+    elseif sum(hw(1:25)) < r && r <= sum(hw(1:26))
         M(34) = M(34) - 1;
         X(1) = X(1) - 1;
         M(35) = M(35) + 1;
-    elseif sum(hw(1:26)) < r && r < sum(hw(1:27))
+    elseif sum(hw(1:26)) < r && r <= sum(hw(1:27))
         M(35) = M(35) - 1;
         M(34) = M(34) + 1;
         X(1) = X(1) + 1;
-    elseif sum(hw(1:27)) < r && r < sum(hw(1:28))
+    elseif sum(hw(1:27)) < r && r <= sum(hw(1:28))
         M(35) = M(35) - 1;
         M(36) = M(36) + 1;
-    elseif sum(hw(1:28)) < r && r < sum(hw(1:29))
+    elseif sum(hw(1:28)) < r && r <= sum(hw(1:29))
         M(36) = M(36) - 1;
         M(37) = M(37) + 1;
-    elseif sum(hw(1:29)) < r && r < sum(hw(1:30))
+    elseif sum(hw(1:29)) < r && r <= sum(hw(1:30))
         M(37) = M(37) - 1;
         M(34) = M(34) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % using M6
-    elseif sum(hw(1:30)) < r && r < sum(hw(1:31))
+    elseif sum(hw(1:30)) < r && r <= sum(hw(1:31))
         M(41) = M(41) - 1;
         X(1) = X(1) - 1;
         M(42) = M(42) + 1;
-    elseif sum(hw(1:31)) < r && r < sum(hw(1:32))
+    elseif sum(hw(1:31)) < r && r <= sum(hw(1:32))
         M(42) = M(42) - 1;
         M(41) = M(41) + 1;
         X(1) = X(1) + 1;
-    elseif sum(hw(1:32)) < r && r < sum(hw(1:33))
+    elseif sum(hw(1:32)) < r && r <= sum(hw(1:33))
         M(42) = M(42) - 1;
         M(43) = M(43) + 1;
-    elseif sum(hw(1:33)) < r && r < sum(hw(1:34))
+    elseif sum(hw(1:33)) < r && r <= sum(hw(1:34))
         M(43) = M(43) - 1;
         M(44) = M(44) + 1;
-    elseif sum(hw(1:34)) < r && r < sum(hw(1:35))
+    elseif sum(hw(1:34)) < r && r <= sum(hw(1:35))
         M(44) = M(44) - 1;
         M(41) = M(41) + 1;
+        X(2) = X(2) + 1;
         X(3) = X(3) + 1;
-        X(4) = X(4) + 1;
         
         % PLC and G-protein activation/deactivation
         
-    elseif sum(hw(1:35)) < r && r < sum(hw(1:36))
+    elseif sum(hw(1:35)) < r && r <= sum(hw(1:36))
+        X(2) = X(2) - 1;
+        X(4) = X(4) - 1;
+        X(5) = X(5) + 1;
+    elseif sum(hw(1:36)) < r && r <= sum(hw(1:37))
         X(3) = X(3) - 1;
         X(5) = X(5) - 1;
-        X(6) = X(6) + 1;
-    elseif sum(hw(1:36)) < r && r < sum(hw(1:37))
-        X(4) = X(4) - 1;
-        X(6) = X(6) - 1;
-        X(5) = X(5) + 1;
+        X(4) = X(4) + 1;
         X(1) = X(1) + 1;
         
         % Second Messenger Creation
         
-    elseif sum(hw(1:37)) < r && r < sum(hw(1:38))
-        %X(6) = X(6) - 1;
-        %X(10) = X(10) - 1;
-        X(11) = X(11) + 1;
-        %X(6) = X(6) + 1;
+    elseif sum(hw(1:37)) < r && r <= sum(hw(1:38))
+        X(6) = X(6) + 1;
         
         % Channel Opening/Closing
         
-    elseif sum(hw(1:38)) < r && r < sum(hw(1:39))
-        X(11) = X(11) - 1;
-        X(12) = X(12) - 1;
-        X(13) = X(13) + 1;
-    elseif sum(hw(1:39)) < r && r < sum(hw(1:40))
-        X(13) = X(13) - 1;
-        %X(11) = X(11) + 1;
-        %X(12) = X(12) + 1;
+    elseif sum(hw(1:38)) < r && r <= sum(hw(1:39))
+        X(6) = X(6) - 1;
+        X(7) = X(7) - 1;
+        X(8) = X(8) + 1;
+    elseif sum(hw(1:39)) < r && r <= sum(hw(1:40))
+        X(8) = X(8) - 1;
+        X(6) = X(6) + 1;
+        X(7) = X(7) + 1;
         
         %Kinase Phosphorylation M0
         
-    elseif sum(hw(1:40)) < r && r < sum(hw(1:41))
+    elseif sum(hw(1:40)) < r && r <= sum(hw(1:41))
         M(1) = M(1) - 1;
         M(5) = M(5) + 1;
-    elseif sum(hw(1:41)) < r && r < sum(hw(1:42))
-        M(1) = M(1) + 1;
+    elseif sum(hw(1:41)) < r && r <= sum(hw(1:42))
         M(5) = M(5) - 1;
-    elseif sum(hw(1:42)) < r && r < sum(hw(1:43))
+        M(1) = M(1) + 1;
+    elseif sum(hw(1:42)) < r && r <= sum(hw(1:43))
         M(5) = M(5) - 1;
         M(10) = M(10) + 1;
         
         % M1
         
-    elseif sum(hw(1:43)) < r && r < sum(hw(1:44))
+    elseif sum(hw(1:43)) < r && r <= sum(hw(1:44))
         M(6) = M(6) - 1;
         M(10) = M(10) + 1;
-    elseif sum(hw(1:44)) < r && r < sum(hw(1:45))
-        M(6) = M(6) + 1;
+    elseif sum(hw(1:44)) < r && r <= sum(hw(1:45))
         M(10) = M(10) - 1;
-    elseif sum(hw(1:45)) < r && r < sum(hw(1:46))
+        M(6) = M(6) + 1;
+    elseif sum(hw(1:45)) < r && r <= sum(hw(1:46))
         M(10) = M(10) - 1;
         M(17) = M(17) + 1;
         
         %M2
         
-    elseif sum(hw(1:46)) < r && r < sum(hw(1:47))
+    elseif sum(hw(1:46)) < r && r <= sum(hw(1:47))
         M(13) = M(13) - 1;
         M(17) = M(17) + 1;
-    elseif sum(hw(1:47)) < r && r < sum(hw(1:48))
-        M(13) = M(13) + 1;
+    elseif sum(hw(1:47)) < r && r <= sum(hw(1:48))
         M(17) = M(17) - 1;
-    elseif sum(hw(1:48)) < r && r < sum(hw(1:49))
+        M(13) = M(13) + 1;
+    elseif sum(hw(1:48)) < r && r <= sum(hw(1:49))
         M(17) = M(17) - 1;
         M(24) = M(24) + 1;
         
         %M3
         
-    elseif sum(hw(1:49)) < r && r < sum(hw(1:50))
+    elseif sum(hw(1:49)) < r && r <= sum(hw(1:50))
         M(20) = M(20) - 1;
         M(24) = M(24) + 1;
-    elseif sum(hw(1:50)) < r && r < sum(hw(1:51))
-        M(20) = M(20) + 1;
+    elseif sum(hw(1:50)) < r && r <= sum(hw(1:51))
         M(24) = M(24) - 1;
-    elseif sum(hw(1:51)) < r && r < sum(hw(1:52))
+        M(20) = M(20) + 1;
+    elseif sum(hw(1:51)) < r && r <= sum(hw(1:52))
         M(24) = M(24) - 1;
         M(31) = M(31) + 1;
         
         %M4
         
-        
-    elseif sum(hw(1:52)) < r && r < sum(hw(1:53))
+    elseif sum(hw(1:52)) < r && r <= sum(hw(1:53))
         M(27) = M(27) - 1;
         M(31) = M(31) + 1;
-    elseif sum(hw(1:53)) < r && r < sum(hw(1:54))
-        M(27) = M(27) + 1;
+    elseif sum(hw(1:53)) < r && r <= sum(hw(1:54))
         M(31) = M(31) - 1;
-    elseif sum(hw(1:54)) < r && r < sum(hw(1:55))
+        M(27) = M(27) + 1;
+    elseif sum(hw(1:54)) < r && r <= sum(hw(1:55))
         M(31) = M(31) - 1;
         M(38) = M(38) + 1;
         
         %M5
         
-    elseif sum(hw(1:55)) < r && r < sum(hw(1:56))
+    elseif sum(hw(1:55)) < r && r <= sum(hw(1:56))
         M(34) = M(34) - 1;
         M(38) = M(38) + 1;
-    elseif sum(hw(1:56)) < r && r < sum(hw(1:57))
-        M(34) = M(34) + 1;
+    elseif sum(hw(1:56)) < r && r <= sum(hw(1:57))
         M(38) = M(38) - 1;
-    elseif sum(hw(1:57)) < r && r < sum(hw(1:58))
+        M(34) = M(34) + 1;
+    elseif sum(hw(1:57)) < r && r <= sum(hw(1:58))
         M(38) = M(38) - 1;
         M(45) = M(45) + 1;
         
         %M6
         
-    elseif sum(hw(1:58)) < r && r < sum(hw(1:59))
+    elseif sum(hw(1:58)) < r && r <= sum(hw(1:59))
         M(41) = M(41) - 1;
         M(45) = M(45) + 1;
-    elseif sum(hw(1:59)) < r && r < sum(hw(1:60))
-        M(41) = M(41) + 1;
+    elseif sum(hw(1:59)) < r && r <= sum(hw(1:60))
         M(45) = M(45) - 1;
+        M(41) = M(41) + 1;
         
         % Arrestin Binding
-        % M1
-        
-    elseif sum(hw(1:60)) < r && r < sum(hw(1:61))
+        % M1        
+    elseif sum(hw(1:60)) < r && r <= sum(hw(1:61))
         M(6) = M(6) - 1;
         M(11) = M(11) + 1;
-    elseif sum(hw(1:61)) < r && r < sum(hw(1:62))
+    elseif sum(hw(1:61)) < r && r <= sum(hw(1:62))
         M(6) = M(6) - 1;
         M(12) = M(12) + 1;
         
-        %M2
-    elseif sum(hw(1:62)) < r && r < sum(hw(1:63))
+        %M2       
+    elseif sum(hw(1:62)) < r && r <= sum(hw(1:63))
         M(13) = M(13) - 1;
         M(18) = M(18) + 1;
-    elseif sum(hw(1:63)) < r && r < sum(hw(1:64))
+    elseif sum(hw(1:63)) < r && r <= sum(hw(1:64))
         M(13) = M(13) - 1;
         M(19) = M(19) + 1;
         
-        %M3
-        
-    elseif sum(hw(1:64)) < r && r < sum(hw(1:65))
+        %M3       
+    elseif sum(hw(1:64)) < r && r <= sum(hw(1:65))
         M(20) = M(20) - 1;
         M(25) = M(25) + 1;
-    elseif sum(hw(1:65)) < r && r < sum(hw(1:66))
+    elseif sum(hw(1:65)) < r && r <= sum(hw(1:66))
         M(20) = M(20) - 1;
         M(26) = M(26) + 1;
         
-        %M4
-        
-    elseif sum(hw(1:66)) < r && r < sum(hw(1:67))
+        %M4      
+    elseif sum(hw(1:66)) < r && r <= sum(hw(1:67))
         M(27) = M(27) - 1;
         M(32) = M(32) + 1;
-    elseif sum(hw(1:67)) < r && r < sum(hw(1:68))
+    elseif sum(hw(1:67)) < r && r <= sum(hw(1:68))
         M(27) = M(27) - 1;
         M(33) = M(33) + 1;
         
         %M5
-    elseif sum(hw(1:68)) < r && r < sum(hw(1:69))
+    elseif sum(hw(1:68)) < r && r <= sum(hw(1:69))
         M(34) = M(34) - 1;
         M(39) = M(39) + 1;
-    elseif sum(hw(1:69)) < r && r < sum(hw(1:70))
+    elseif sum(hw(1:69)) < r && r <= sum(hw(1:70))
         M(34) = M(34) - 1;
         M(40) = M(40) + 1;
         
         %M6
-    elseif sum(hw(1:70)) < r && r < sum(hw(1:71))
+    elseif sum(hw(1:70)) < r && r <= sum(hw(1:71))
         M(41) = M(41) - 1;
         M(46) = M(46) + 1;
-    elseif sum(hw(1:71)) < r && r < sum(hw(1:72))
+    elseif sum(hw(1:71)) < r && r <= sum(hw(1:72))
         M(41) = M(41) - 1;
         M(47) = M(47) + 1;
+        
+        % SecM degradation
+    elseif sum(hw(1:72)) < r && r <= sum(hw(1:73))
+        X(6) = X(6) - 1;
     else
         M(1) = M(1);   % If the # of melanopsin cells is zero
     end
     
     % adjust the plotting matrix with the newfound information
-    ttstore (counter) = tt;
+    ttstore(counter+1) = tt;
     tstore(counter+1) = t;
     Xstore(counter+1,:) = X;
     Mstore(counter+1,:) = M;
@@ -704,16 +621,15 @@ for counter=1:maxcounter
 % %    axis([0 14 0 100])
 % %    pause(0.1)
 % %    display(X(1))
-% %    display(X(6))
+% %    display(X(5))
 % %    pause(0.1)
-   if max_chan < X(13)
-       max_chan = X(13);
+
+    % record the maximal number of channels 
+    if max_chan < X(8)
+       max_chan = X(8);
        maxchan_time = t;
-
-   
-
-   end
-   
+    end
+    % record the maximal number of channels
 end
 % % simstuff = {tstore,Mstore,Xstore};
 % % save(sprintf('run%d',runnum),'simstuff')
@@ -721,8 +637,7 @@ tout = tstore;
 tout = tout';
 % % keyboard;
 Mout = [Mstore(:,1) Mstore(:,6) Mstore(:,13) Mstore(:,20) Mstore(:,27) Mstore(:,34) Mstore(:,41)];
-
-Xout = Xstore(:,13);
+Xout = Xstore(:,7); % number of open channels
 
 % end
 %keyboard;
@@ -732,8 +647,6 @@ plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstor
 %axis([0 tmax -1 100]);
 xlabel('time (/sec)'); ylabel('# of cells');
 figure(2)
-plot(tstore, Xstore(:,13))
+plot(tstore, Xstore(:,7)) % number of open channels
 % % 
 % % toc
-
-
