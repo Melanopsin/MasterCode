@@ -148,19 +148,19 @@ for counter=1:maxcounter
         break;
     end
     
-% %     if t>= tflash
-% %         % signals the next flash
-% %        tflash = tflash + tjump;
-% %        % the signal hits all of the melanopsin, potentially activating 10%
-% %        % at any given flash. For a first approximation, assume that the 10%
-% %        % does distinguish between activated and inactive...Pool the M0 and
-% %        % M0*
-% %        numactivated = floor((M(48))*0.1); % For now just activate 10% every time floor it to keep from going negative
-% %        M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
-% %        % M0s from floors and ceilings.
-% %        M(1) = M(1) + numactivated; % same thing
-% %     end
-% %     
+    if t>= tflash
+        % signals the next flash
+       tflash = tflash + tjump;
+       % the signal hits all of the melanopsin, potentially activating 10%
+       % at any given flash. For a first approximation, assume that the 10%
+       % does distinguish between activated and inactive...Pool the M0 and
+       % M0*
+       numactivated = floor((M(48))*0.1); % For now just activate 10% every time floor it to keep from going negative
+       M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       % M0s from floors and ceilings.
+       M(1) = M(1) + numactivated; % same thing
+    end
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -669,6 +669,10 @@ figure(1)
 plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
 %axis([0 tmax -1 100]);
 xlabel('time (/sec)'); ylabel('# of cells');
+screen_size = get(0, 'ScreenSize');
+% % axis([0 6 0 7])
+set(1, 'Position', [0 0 0.75*screen_size(3) 0.75*screen_size(4) ] );
+export_fig('M','-pdf','-nocrop')
 figure(2)
 plot(tstore, Xstore(:,7)) % number of open channels
 % % 

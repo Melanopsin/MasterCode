@@ -14,7 +14,9 @@ function Melanopsin(totrun,dataset)
 % Mn*.G + GTP -- kG4 --> Mn*.G.GTP
 % Mn*.G.GTP -- kG5 --> Mn* + Ga.GTP + Gbg
 % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-% PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
+% PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
+% PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
+% Ga.GDP + Gbr -- kI3 --> G.GDP
 % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
 % SecM -- delta --> 0
 % SecM + Channel+ <-- kO/kC --> SecM.Channel-
@@ -49,7 +51,9 @@ end
 %% X(5)           PLC*.Ga.GTP
 %% X(6)           SecM     
 %% X(7)           Channel- 
-%% X(8)           SecM.Channel+  ];
+%% X(8)           SecM.Channel+
+%% X(9)           PLC.Ga.GDP
+%% X(10)          Ga.GDP    ];
 
 
 %% MELANOPSIN COMPLEXES: M = [
@@ -112,15 +116,15 @@ maxcounter=10000000;
 tic;
 
 K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...    
-       kP,       kI,    kS*PIP2,         kO,         kC, ...
+       kP,      kI1,    kS*PIP2,         kO,         kC, ...
    kk1*Ki,      kk2,    kk3*ATP,  kk4*Arrb1,  kk5*Arrb2, ...
-     kmax,       KM ];
+     kmax,       KM,        kI2,        kI3 ];
 %%  K(1),    K(2),     K(3),      K(4),     K(5), 
 %%  K(6),    K(7),     K(8),      K(9),    K(10),
 %% K(11),   K(12),    K(13),     K(14),    K(15),  
-%% K(16),   K(17)
+%% K(16),   K(17),    K(18),     K(19)
 
-no_rxns = 73;                   % number of reactions (total)
+no_rxns = 75;                   % number of reactions (total)
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
 % clears out the variables for the outfile
@@ -211,7 +215,9 @@ for counter=1:maxcounter
 % PLC and G-protein activation/inactivation
     
     h(36) = K(6)*X(4)*X(2);         % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-    h(37) = K(7)*X(5)*X(3);         % PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
+    h(37) = K(7)*X(5);              % PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
+    h(74) = K(18)*X(9);             % PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
+    h(75) = K(19)*X(10)*X(3);       % Ga.GDP + Gbr -- kI3 --> G.GDP
                                     
 %%
 % Second Messenger Creation
@@ -450,10 +456,19 @@ for counter=1:maxcounter
         X(4) = X(4) - 1;
         X(5) = X(5) + 1;
     elseif sum(hw(1:36)) < r && r <= sum(hw(1:37))
-        X(3) = X(3) - 1;
         X(5) = X(5) - 1;
+        X(9) = X(9) + 1;
+        reaction_count(37,1) = reaction_count(37,1) + 1;
+    elseif sum(hw(1:73)) < r && r <= sum(hw(1:74))
+        X(9) = X(9) - 1;
         X(4) = X(4) + 1;
+        X(10) = X(10) + 1;
+        reaction_count(74,1) = reaction_count(74,1) + 1;
+    elseif sum(hw(1:74)) < r && r <= sum(hw(1:75))
+        X(10) = X(10) - 1;
+        X(3) = X(3) - 1;
         X(1) = X(1) + 1;
+        reaction_count(75,1) = reaction_count(75,1) + 1;
         
         % Second Messenger Creation
         
