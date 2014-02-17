@@ -1,6 +1,7 @@
 % Melanopsin2 will run a single run of the same code found in melanopsin.m
 
-function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
+% function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
+function Melanopsin2(dataset)
 
 % MODEL OF MELANOPSIN ACTIVATION
 
@@ -9,7 +10,9 @@ function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
 % Mn*.G + GTP -- kG4 --> Mn*.G.GTP
 % Mn*.G.GTP -- kG5 --> Mn* + Ga.GTP + Gbg
 % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-% PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
+% PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
+% PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
+% Ga.GDP + Gbr -- kI3 --> G.GDP
 % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
 % SecM -- delta --> 0
 % SecM + Channel+ <-- kO/kC --> SecM.Channel-
@@ -21,6 +24,7 @@ function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
 
 % case 0 --- calcium imaging data
 % case 1 --- electrophysiology data
+% case 2 --- store prameters values you want in data.mat
 max_chan = 0;
 maxchan_time = 0;
 
@@ -28,7 +32,9 @@ switch dataset
     case 0        
         load('comparetoephys.mat')
     case 1
-        load('incompleteset.mat')      
+        load('incompleteset.mat')  
+    case 2
+        load('data.mat')    
     otherwise        
 end
 
@@ -40,7 +46,9 @@ end
 %% X(5)           PLC*.Ga.GTP
 %% X(6)           SecM      
 %% X(7)           Channel-
-%% X(8)           SecM.Channel+  ];
+%% X(8)           SecM.Channel+
+%% X(9)           PLC.Ga.GDP
+%% X(10)          Ga.GDP    ];
 
 
 %% MELANOPSIN COMPLEXES: M = [
@@ -94,31 +102,38 @@ end
 
 
 t = 0;
-tmax = 15;
-tcrit = 0.1*tmax;
-tracker =0;
-tracker2 = 0;
-counter =1;
+tmax = 100;
+counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
 tic;
 
 K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...    
-       kP,       kI,    kS*PIP2,         kO,         kC, ...
+       kP,      kI1,    kS*PIP2,         kO,         kC, ...
    kk1*Ki,      kk2,    kk3*ATP,  kk4*Arrb1,  kk5*Arrb2, ...
-     kmax,       KM ];
+     kmax,       KM,        kI2,        kI3 ];
 %%  K(1),    K(2),     K(3),      K(4),     K(5), 
 %%  K(6),    K(7),     K(8),      K(9),    K(10),
 %% K(11),   K(12),    K(13),     K(14),    K(15),  
-%% K(16),   K(17)
+%% K(16),   K(17),    K(18),     K(19)
 
-no_rxns = 73;                   % number of reactions (total)
+no_rxns = 75;                   % number of reactions (total)
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
-% clears out the variables for the outfile
-tstore(1,1) = t;                % stores time
-Xstore(1,:) = X;                % stores time 
-Mstore(1,:) = M;                % stores time
-ttstore (1) = 0;
+
+%% store time, molecule numbers in every 'time_step' sec
+time_step=0.25; % You record t, M, X in every time interval equal to time_step
+tstore = zeros(floor(tmax/time_step)+1,1);
+Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
+Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
+ttstore = zeros(floor(tmax/time_step)+1,1);
+
+tstore(1,1) = t;
+Xstore(1,:) = X;
+Mstore(1,:) = M;
+ttstore(1,1) = 0;
+prev_t_index = 1; % it stores the previous time intex
+%% store time, molecule numbers in every 'time_step' sec
+
 
 %% Build function to account for increase in arrestin binding affinity
 %% with more phosphates bound to melanopsin carboxyl tail.
@@ -202,7 +217,9 @@ for counter=1:maxcounter
 % PLC and G-protein activation/inactivation
     
     h(36) = K(6)*X(4)*X(2);         % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-    h(37) = K(7)*X(5)*X(3);         % PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
+    h(37) = K(7)*X(5);              % PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
+    h(74) = K(18)*X(9);             % PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
+    h(75) = K(19)*X(10)*X(3);       % Ga.GDP + Gbr -- kI3 --> G.GDP
                                     
 %%
 % Second Messenger Creation
@@ -441,9 +458,15 @@ for counter=1:maxcounter
         X(4) = X(4) - 1;
         X(5) = X(5) + 1;
     elseif sum(hw(1:36)) < r && r <= sum(hw(1:37))
-        X(3) = X(3) - 1;
         X(5) = X(5) - 1;
+        X(9) = X(9) + 1;
+    elseif sum(hw(1:73)) < r && r <= sum(hw(1:74))
+        X(9) = X(9) - 1;
         X(4) = X(4) + 1;
+        X(10) = X(10) + 1;
+    elseif sum(hw(1:74)) < r && r <= sum(hw(1:75))
+        X(10) = X(10) - 1;
+        X(3) = X(3) - 1;
         X(1) = X(1) + 1;
         
         % Second Messenger Creation
@@ -599,13 +622,24 @@ for counter=1:maxcounter
         M(1) = M(1);   % If the # of melanopsin cells is zero
     end
     
-    % adjust the plotting matrix with the newfound information
-    ttstore(counter+1) = tt;
-    tstore(counter+1) = t;
-    Xstore(counter+1,:) = X;
-    Mstore(counter+1,:) = M;
-
     
+    %% store time, molecule numbers in every 'time_step' sec
+    time_index = floor(t/time_step) + 1; % an index for the current time
+    if time_index > floor(tmax/time_step)+1;
+        time_index = floor(tmax/time_step)+1;
+    end
+    if time_index > prev_t_index
+        for j = (prev_t_index+1):time_index
+            tstore(j,1) = t;
+            Xstore(j,:) = X;
+            Mstore(j,:) = M;
+            ttstore(j,1) = tt;
+        end
+    end
+    prev_t_index = time_index;    
+    %% store time, molecule numbers in every 'time_step' sec
+   
+ 
 % %     if t>19.89
 % %         keyboard;
 % %     end
@@ -624,29 +658,27 @@ for counter=1:maxcounter
 % %    display(X(5))
 % %    pause(0.1)
 
-    % record the maximal number of channels 
+    %% record the maximal number of channels 
     if max_chan < X(8)
        max_chan = X(8);
        maxchan_time = t;
     end
-    % record the maximal number of channels
+    %% record the maximal number of channels
 end
 % % simstuff = {tstore,Mstore,Xstore};
 % % save(sprintf('run%d',runnum),'simstuff')
-tout = tstore;
-tout = tout';
-% % keyboard;
-Mout = [Mstore(:,1) Mstore(:,6) Mstore(:,13) Mstore(:,20) Mstore(:,27) Mstore(:,34) Mstore(:,41)];
-Xout = Xstore(:,7); % number of open channels
 
-% end
+save('results.mat','tstore','Mstore','Xstore','max_chan','maxchan_time')
+
 %keyboard;
-%plotting!
+%% plotting
 figure(1)
 plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
 %axis([0 tmax -1 100]);
 xlabel('time (/sec)'); ylabel('# of cells');
 figure(2)
-plot(tstore, Xstore(:,7)) % number of open channels
-% % 
-% % toc
+plot(tstore,Xstore(:,8)./(Xstore(:,7)+Xstore(:,8))) 
+% a ratio of the number of open channels out of the total number of
+% channels
+%% plotting 
+toc

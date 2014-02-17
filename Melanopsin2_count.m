@@ -1,5 +1,6 @@
 % Melanopsin2_count will run a single run of the same code found in melanopsin.m
-% as Melanopsin2 does. It includes a counter of each reaction's occurence.
+% as Melanopsin2 does. 'reaction_count' records each reaction's occurence so that 
+% we can check whether every reaction happens.
 
 % function [tout Mout Xout max_chan maxchan_time] = Melanopsin2_count(dataset)
 function Melanopsin2_count(dataset)
@@ -22,11 +23,9 @@ function Melanopsin2_count(dataset)
 % Mn* + ArrB1 -- kK4 w(n) --> Mn*.ArrB1
 % Mn* + ArrB2 -- kK5 w(n) --> Mn*.ArrB2
 
-Hill = 1;
-% Hill = 10;
-
 % case 0 --- calcium imaging data
 % case 1 --- electrophysiology data
+% case 2 --- store prameters values you want in data.mat
 max_chan = 0;
 maxchan_time = 0;
 
@@ -37,14 +36,6 @@ switch dataset
         load('incompleteset.mat')
     case 2
         load('data.mat')
-    case 3
-        load('Erika_data.mat')
-    case 4
-        load('Erika_data_slow.mat')
-    case 5
-        load('data2.mat')
-    case 6
-        load('data4.mat')
     otherwise        
 end
 
@@ -56,7 +47,7 @@ end
 %% X(5)           PLC*.Ga.GTP
 %% X(6)           SecM      
 %% X(7)           Channel-: closed channel
-%% X(8)           SecM.Channel+
+%% X(8)           SecM.Channel+: open channel
 %% X(9)           PLC.Ga.GDP
 %% X(10)          Ga.GDP    ];
 
@@ -112,11 +103,8 @@ end
 
 
 t = 0;
-tmax = 45;
-tcrit = 0.1*tmax;
-tracker =0;
-tracker2 = 0;
-counter =1;
+tmax = 100;
+counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
 tic;
 
@@ -131,25 +119,33 @@ K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...
 
 no_rxns = 75;                   % number of reactions (total)
 h = zeros(no_rxns,1);           % initialize the hazard vector
-reaction_count = zeros(no_rxns,1); % count the number of each reactions' occuring.
+reaction_count = zeros(no_rxns,1); % it counts the number of each reactions' occuring.
 
-% clears out the variables for the outfile
-tstore(1,1) = t;                % stores time
-Xstore(1,:) = X;                % stores time 
-Mstore(1,:) = M;                % stores time
-ttstore (1) = 0;
+
+%% store time, molecule numbers in every 'time_step' sec
+time_step=0.25; % You record t, M, X in every time interval equal to time_step
+tstore = zeros(floor(tmax/time_step)+1,1);
+Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
+Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
+ttstore = zeros(floor(tmax/time_step)+1,1);
+
+tstore(1,1) = t;
+Xstore(1,:) = X;
+Mstore(1,:) = M;
+ttstore(1,1) = 0;
+prev_t_index = 1; % it stores the previous time intex
+%% store time, molecule numbers in every 'time_step' sec
+
 
 %% Build function to account for increase in arrestin binding affinity
 %% with more phosphates bound to melanopsin carboxyl tail.
 
 W = @(n) 1-exp(-n*10); %it is alway 1
-% W = @(n) 1-exp(-n*2);
 
 %% Build function to account for decrease in G-protein activation
 %% with more phosphates bound to melanopsin carboxyl tail.
 
 Y = @(n) exp(-n);
-% Y = @(n) exp(-n/2);
 
 %% Begin the algorithm
 
@@ -291,7 +287,7 @@ for counter=1:maxcounter
         
 %%
 % SecM degradation
-    h(73) = kmax*X(6)^Hill/(X(6)^Hill+KM^Hill);    % SecM -- delta --> 0, delta = kmax*SecM/(SecM+KM)
+    h(73) = kmax*X(6)/(X(6)+KM);    % SecM -- delta --> 0, delta = kmax*SecM/(SecM+KM)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -702,12 +698,23 @@ for counter=1:maxcounter
     else
         M(1) = M(1);   % If the # of melanopsin cells is zero
     end
+  
     
-    % adjust the plotting matrix with the newfound information
-    ttstore(counter+1) = tt;
-    tstore(counter+1) = t;
-    Xstore(counter+1,:) = X;
-    Mstore(counter+1,:) = M;
+    %% store time, molecule numbers in every 'time_step' sec
+    time_index = floor(t/time_step) + 1; % an index for the current time
+    if time_index > floor(tmax/time_step)+1;
+        time_index = floor(tmax/time_step)+1;
+    end
+    if time_index > prev_t_index
+        for j = (prev_t_index+1):time_index
+            tstore(j,1) = t;
+            Xstore(j,:) = X;
+            Mstore(j,:) = M;
+            ttstore(j,1) = tt;
+        end
+    end
+    prev_t_index = time_index;    
+    %% store time, molecule numbers in every 'time_step' sec
 
     
 % %     if t>19.89
@@ -728,39 +735,27 @@ for counter=1:maxcounter
 % %    display(X(5))
 % %    pause(0.1)
 
-    % record the maximal number of channels 
+    %% record the maximal number of channels 
     if max_chan < X(8)
        max_chan = X(8);
        maxchan_time = t;
     end
-    % record the maximal number of channels
+    %% record the maximal number of channels
 end
 % % simstuff = {tstore,Mstore,Xstore};
 % % save(sprintf('run%d',runnum),'simstuff')
-tout = tstore;
-tout = tout';
-% % keyboard;
-Mout = [Mstore(:,1) Mstore(:,6) Mstore(:,13) Mstore(:,20) Mstore(:,27) Mstore(:,34) Mstore(:,41)];
-Xout = Xstore; %(:,7); % number of open channels
 
-save('results.mat','reaction_count','tout','Mout','Xout','max_chan','maxchan_time')
+save('results.mat','reaction_count','tstore','Mstore','Xstore','max_chan','maxchan_time')
 
-% end
-% %keyboard;
-% %plotting!
-% figure(1)
-% plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
-% %axis([0 tmax -1 100]);
-% xlabel('time (/sec)'); ylabel('# of cells');
-% figure(2)
-% plot(tstore, Xstore(:,8)) % number of open channels
-% figure(2)
-plot(tstore, Xstore(:,8)/max(Xstore(:,8)));% number of open channels
-hold on
-Evansdata = textread('Evans1.csv', '', 'delimiter', ',');% reading data file "Evans1.csv"
-plot(Evansdata(1:60,1),Evansdata(1:60,2),'r-','LineWidth',2);
-xlabel('time (/sec)'); ylabel('# of open channels');
-title('# of open channels vs. data');
-hold off
-% % 
+%keyboard;
+%% plotting
+figure(1)
+plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
+%axis([0 tmax -1 100]);
+xlabel('time (/sec)'); ylabel('# of cells');
+figure(2)
+plot(tstore, Xstore(:,8)./(Xstore(:,7)+Xstore(:,8))) 
+% a ratio of the number of open channels out of the total number of
+% channels
+%% plotting 
 toc
