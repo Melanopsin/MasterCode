@@ -7,6 +7,38 @@
 
 function Melanopsin(totrun,dataset)
 
+%% store time, molecule numbers in every 'time_step' sec for all runs
+tmax = 100;     % final time for each run
+time_step=0.25; % maximum time step?
+% You record t, M, X in every time interval equal to time_step
+tstore = zeros(floor(tmax/time_step)+1,1,totrun);  
+Xstore = zeros(floor(tmax/time_step)+1,10,totrun); % <----These should be inputs no hard code size(X,2)=10
+Mstore = zeros(floor(tmax/time_step)+1,47,totrun); % <----These should be inputs no hard codesize(M,2)=47
+ttstore = zeros(floor(tmax/time_step)+1,1,totrun); 
+%% store time, molecule numbers in every 'time_step' sec for all runs
+
+tic;
+for runnum = 1:totrun
+    
+    clear t;
+    clear M; 
+    clear X;
+
+    no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
+    t = 0;
+    counter =1; % counter counts the number of time iterations.
+    maxcounter=10000000;
+    
+% case 1 --- store parameters values you want in data.mat
+% case 2 --- erika's parameters
+switch dataset
+    case 1        
+        load('data.mat')       
+    case 2        
+        load('erika.mat') 
+    otherwise       
+end
+
 % MODEL OF MELANOPSIN ACTIVATION
 
 % Mn* + G.GDP <-- kG1 y(n)/kG2 --> Mn*.G.GDP
@@ -24,35 +56,6 @@ function Melanopsin(totrun,dataset)
 % Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
 % Mn* + ArrB1 -- kK4 w(n) --> Mn*.ArrB1
 % Mn* + ArrB2 -- kK5 w(n) --> Mn*.ArrB2
-
-%% store time, molecule numbers in every 'time_step' sec for all runs
-tmax = 100; 
-time_step=0.25; % You record t, M, X in every time interval equal to time_step
-tstore = zeros(floor(tmax/time_step)+1,1,totrun);
-Xstore = zeros(floor(tmax/time_step)+1,10,totrun); % size(X,2)=10
-Mstore = zeros(floor(tmax/time_step)+1,47,totrun); % size(M,2)=47
-ttstore = zeros(floor(tmax/time_step)+1,1,totrun);
-%% store time, molecule numbers in every 'time_step' sec for all runs
-
-tic;
-for runnum = 1:totrun
-    
-    clear t;
-    clear M; 
-    clear X;
-
-% case 0 --- calcium imaging data
-% case 1 --- electrophysiology data
-% case 2 --- store prameters values you want in data.mat
-switch dataset
-    case 0
-        load('comparetoephys.mat')
-    case 1        
-        load('incompleteset.mat')       
-    case 2        
-        load('erika.mat') 
-    otherwise       
-end
 
 %% SPECIES: X = [
 %% X(1)           G.GDP
@@ -117,23 +120,23 @@ end
 %% M(47)                        M6*.ArrB2 ];
 
 
-t = 0;
-counter =1; % counter counts the number of time iterations.
-maxcounter=10000000;
 
-K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...    
-       kP,      kI1,    kS*PIP2,         kO,         kC, ...
-   kk1*Ki,      kk2,    kk3*ATP,  kk4*Arrb1,  kk5*Arrb2, ...
-     kmax,       KM,        kI2,        kI3 ];
-%%  K(1),    K(2),     K(3),      K(4),     K(5), 
-%%  K(6),    K(7),     K(8),      K(9),    K(10),
-%% K(11),   K(12),    K(13),     K(14),    K(15),  
-%% K(16),   K(17),    K(18),     K(19)
 
-no_rxns = 75;                   % number of reactions (total)
+K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...    
+      kP,       kI1,        kS*PIP2,    kO,         kC, ...
+      kk1*Ki,   kk2,        kk3*ATP,    kk4*Arrb1,  kk5*Arrb2, ...
+      kmax,     KM,         kI2,        kI3 ];
+  
+%%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
+%%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
+%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kk4*Arrb1,   K(15)=kk5*Arrb2,  
+%%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3
+
+
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
-h_tot=0;
+h_tot=0;                        % What is this? 
+
 %% store time, molecule numbers in every 'time_step' sec
 tstore(1,1,runnum) = t;
 Xstore(1,:,runnum) = X;
@@ -357,12 +360,12 @@ for counter=1:maxcounter
         % using M2
     elseif sum(hw(1:10)) < r && r <= sum(hw(1:11))
         M(13) = M(13) - 1;
-        X(1) = X(1) - 1;
+        X(1)  = X(1) - 1;
         M(14) = M(14) + 1;
     elseif sum(hw(1:11)) < r && r <= sum(hw(1:12))
         M(14) = M(14) - 1;
         M(13) = M(13) + 1;
-        X(1) = X(1) + 1;
+        X(1)  = X(1) + 1;
     elseif sum(hw(1:12)) < r && r <= sum(hw(1:13))
         M(14) = M(14) - 1;
         M(15) = M(15) + 1;

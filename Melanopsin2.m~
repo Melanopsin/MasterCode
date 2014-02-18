@@ -11,9 +11,6 @@ function Melanopsin2(dataset)
 max_chan = 0;       % What are these?
 maxchan_time = 0;   % What are these?
 
-
-no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
-
 t = 0;
 tmax = 100;
 counter =1; % counter counts the number of time iterations.
@@ -112,16 +109,16 @@ end
 
 tic;
 
-K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...    
-      kP,       kI1,        kS*PIP2,    kO,         kC, ...
-      kk1*Ki,   kk2,        kk3*ATP,    kk4*Arrb1,  kk5*Arrb2, ...
-      kmax,     KM,         kI2,        kI3 ];
-  
-%%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
-%%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
-%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kk4*Arrb1,   K(15)=kk5*Arrb2,  
-%%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3
+K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...    
+       kP,      kI1,    kS*PIP2,         kO,         kC, ...
+   kk1*Ki,      kk2,    kk3*ATP,  kk4*Arrb1,  kk5*Arrb2, ...
+     kmax,       KM,        kI2,        kI3 ];
+%%  K(1),    K(2),     K(3),      K(4),     K(5), 
+%%  K(6),    K(7),     K(8),      K(9),    K(10),
+%% K(11),   K(12),    K(13),     K(14),    K(15),  
+%% K(16),   K(17),    K(18),     K(19)
 
+no_rxns = 75;                   % number of reactions (total)
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
 
