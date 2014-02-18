@@ -34,7 +34,7 @@ initco = [par(1)^2 0 0 0 0 0 0 0 0.695486 0.113123 0 par(2)^2 0 0 par(3)^2]
 
 %Raw Electrophysiology Data 
 %Location of the data
-filename='\\profile.ad.umbc.edu\Userfiles$\dthatch1\My Documents\data.xlsx';
+filename='data.xlsx';
 sheet='Data Manipulation'; 
 xrange='H1182:H1642';
 yrange='L1182:L1642';
