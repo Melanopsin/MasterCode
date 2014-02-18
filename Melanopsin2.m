@@ -34,7 +34,7 @@ switch dataset
     case 1
         load('incompleteset.mat')  
     case 2
-        load('data.mat')    
+        %load('data.mat')    
     otherwise        
 end
 
