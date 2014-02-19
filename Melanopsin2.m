@@ -22,7 +22,7 @@ maxcounter=10000000;
 switch dataset    
     
     case 1
-        load('data.mat')  
+        load('erika.mat')  
     case 2
         load('data.mat')    
     otherwise        
