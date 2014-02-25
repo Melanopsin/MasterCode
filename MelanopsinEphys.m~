@@ -1,7 +1,7 @@
 % Melanopsin2 will run a single run of the same code found in melanopsin.m
 
 % function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
-function Melanopsin2(dataset)
+function MelanopsinEphys(dataset)
 
 
 
@@ -15,7 +15,7 @@ maxchan_time = 0;   % What are these?
 no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
 
 t = 0;
-tmax = 100;
+tmax = 15;
 counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
 
@@ -26,6 +26,7 @@ switch dataset
     case 2
         load('data.mat') 
     case 3
+        MatchEphys
         load('ephys.mat')
         
     otherwise        
@@ -680,12 +681,20 @@ save('results.mat','tstore','Mstore','Xstore','max_chan','maxchan_time')
 
 %keyboard;
 %% plotting
-figure(1)
-plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
-%axis([0 tmax -1 100]);
-xlabel('time (/sec)'); ylabel('# of cells');
+% % figure(1)
+% % plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
+% % %axis([0 tmax -1 100]);
+% % xlabel('time (/sec)'); ylabel('# of cells');
+% % close all
 figure(2)
-plot(tstore,Xstore(:,8)./(Xstore(:,7)+Xstore(:,8))) 
+Edata = dlmread('EphysGraph.csv')
+
+plot(Edata(:,2)-1.29,Edata(:,3),'r')
+hold all
+opchan=(Xstore(:,8)./(Xstore(:,7)+Xstore(:,8)));
+plot(tstore,opchan/max(opchan)) 
+
+
 % a ratio of the number of open channels out of the total number of
 % channels
 %% plotting 
