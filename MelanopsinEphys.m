@@ -26,7 +26,7 @@ switch dataset
     case 2
         load('data.mat') 
     case 3
-        %MatchEphys
+        MatchEphys
         load('ephys.mat')
         
     otherwise        

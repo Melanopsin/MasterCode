@@ -15,8 +15,8 @@ maxchan_time = 0;   % What are these?
 no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
 
 t = 0;
-tmax = 300;
-tflash = 100.0;                   % Time for second flash
+tmax = 120;
+tflash = 20.0;                   % Time for second flash
 tjump = tflash;                 % Time between flashes
 counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
@@ -659,11 +659,11 @@ for counter=1:maxcounter
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1) = t;
-          %% New
-            if h_tot==0
-                tstore(j,1) = (j-1)*time_step;
-            end
-          %% New
+% %           %% New
+% %             if h_tot==0
+% %                 tstore(j,1) = (j-1)*time_step;
+% %             end
+% %           %% New
             Xstore(j,:) = X;
             Mstore(j,:) = M;
             ttstore(j,1) = tt;

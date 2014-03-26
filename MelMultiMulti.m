@@ -26,8 +26,8 @@ for runnum = 1:totrun
 
     no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
     t = 0;
-    tmax = 200;
-    tflash = 50.0;                   % Time for second flash
+    tmax = 15;
+    tflash = 0.0;                   % Time for second flash
     tjump = tflash;                 % Time between flashes
 
     counter =1; % counter counts the number of time iterations.
@@ -41,6 +41,7 @@ switch dataset
     case 2        
         load('erika.mat') 
     case 3
+        Set_ICMulti
         load('multidata.mat')
     otherwise       
 end
