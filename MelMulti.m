@@ -325,6 +325,12 @@ for counter=1:maxcounter
     % pick a random number and use the weights to "select" an action
     r = rand(1,1);
     
+    %% New
+    if h_tot==0
+        r = 10;
+    end
+    %% New
+    
     % based on r, make a decision
     % Using M0
     if 0 <= r && r <= hw(1)
@@ -653,6 +659,11 @@ for counter=1:maxcounter
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1) = t;
+          %% New
+            if h_tot==0
+                tstore(j,1) = (j-1)*time_step;
+            end
+          %% New
             Xstore(j,:) = X;
             Mstore(j,:) = M;
             ttstore(j,1) = tt;

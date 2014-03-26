@@ -1,50 +1,6 @@
-% Melanopsin(totrun,dataset) will run the Gillespie algorithm code
-% for the number of runs specified (totrun) and using the initial values 
-% and deterministic rate constants for the specified dataset (dataset). Later once
-% the optimization code is finished the rate constants used will be from
-% the rates written to file by that routine. The realizations are saved in files called
-% run<number>.mat.
+% Melanopsin2 will run a single run of the same code found in melanopsin.m
 
-% % function MelEphysSevRun(totrun,dataset)
-clear all
-close all
-totrun = 100;
-dataset = 3;
-%% store time, molecule numbers in every 'time_step' sec for all runs
-tmax = 15;     % final time for each run
-time_step=0.25; % maximum time step?
-% You record t, M, X in every time interval equal to time_step
-tstore = zeros(floor(tmax/time_step)+1,1,totrun);  
-Xstore = zeros(floor(tmax/time_step)+1,10,totrun); % <----These should be inputs no hard code size(X,2)=10
-Mstore = zeros(floor(tmax/time_step)+1,47,totrun); % <----These should be inputs no hard codesize(M,2)=47
-ttstore = zeros(floor(tmax/time_step)+1,1,totrun); 
-%% store time, molecule numbers in every 'time_step' sec for all runs
-
-tic;
-for runnum = 1:totrun
-   
-    
-    clear t;
-    clear M; 
-    clear X;
-
-    no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
-    t = 0;
-    counter =1; % counter counts the number of time iterations.
-    maxcounter=10000000;
-    
-% case 1 --- store parameters values you want in data.mat
-% case 2 --- erika's parameters
-switch dataset
-    case 1        
-        load('data.mat')       
-    case 2        
-        load('erika.mat')
-    case 3
-        MatchEphys
-        load('ephys.mat')
-    otherwise       
-end
+function [tout Mout Xout max_chan maxchan_time] = MelanopsinMult(dataset)
 
 % MODEL OF MELANOPSIN ACTIVATION
 
@@ -53,9 +9,7 @@ end
 % Mn*.G + GTP -- kG4 --> Mn*.G.GTP
 % Mn*.G.GTP -- kG5 --> Mn* + Ga.GTP + Gbg
 % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-% PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
-% PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
-% Ga.GDP + Gbr -- kI3 --> G.GDP
+% PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
 % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
 % SecM -- delta --> 0
 % SecM + Channel+ <-- kO/kC --> SecM.Channel-
@@ -64,94 +18,122 @@ end
 % Mn* + ArrB1 -- kK4 w(n) --> Mn*.ArrB1
 % Mn* + ArrB2 -- kK5 w(n) --> Mn*.ArrB2
 
+
+% case 0 --- calcium imaging data
+% case 1 --- electrophysiology data
+max_chan = 0;
+maxchan_time = 0;
+ 
+switch dataset    
+    case 0        
+        load('comparetoephysmulti2.mat')
+    case 1
+        load('incompleteset.mat')      
+    otherwise        
+end
+
 %% SPECIES: X = [
 %% X(1)           G.GDP
 %% X(2)           Ga.GTP
 %% X(3)           Gbg
 %% X(4)           PLC
 %% X(5)           PLC*.Ga.GTP
-%% X(6)           SecM     
-%% X(7)           Channel- 
-%% X(8)           SecM.Channel+
-%% X(9)           PLC.Ga.GDP
-%% X(10)          Ga.GDP    ];
+%% X(6)           SecM      
+%% X(7)           Channel-
+%% X(8)           SecM.Channel+  ];
 
 
 %% MELANOPSIN COMPLEXES: M = [
-%% M(1)                         M0*
-%% M(2)                         M0*.G.GDP
-%% M(3)                         M0*.G
-%% M(4)                         M0*.G.GTP
-%% M(5)                         M0*.K
-%% M(6)                         M1*
-%% M(7)                         M1*.G.GDP
-%% M(8)                         M1*.G
-%% M(9)                         M1*.G.GTP
-%% M(10)                        M1*.K
-%% M(11)                        M1*.ArrB1
-%% M(12)                        M1*.ArrB2
-%% M(13)                        M2*
-%% M(14)                        M2*.G.GDP
-%% M(15)                        M2*.G
-%% M(16)                        M2*.G.GTP
-%% M(17)                        M2*.K
-%% M(18)                        M2*.ArrB1
-%% M(19)                        M2*.ArrB2
-%% M(20)                        M3*
-%% M(21)                        M3*.G.GDP
-%% M(22)                        M3*.G
-%% M(23)                        M3*.G.GTP
-%% M(24)                        M3*.K
-%% M(25)                        M3*.ArrB1
-%% M(26)                        M3*.ArrB2
-%% M(27)                        M4*
-%% M(28)                        M4*.G.GDP
-%% M(29)                        M4*.G
-%% M(30)                        M4*.G.GTP
-%% M(31)                        M4*.K
-%% M(32)                        M4*.ArrB1
-%% M(33)                        M4*.ArrB2
-%% M(34)                        M5*
-%% M(35)                        M5*.G.GDP
-%% M(36)                        M5*.G
-%% M(37)                        M5*.G.GTP
-%% M(38)                        M5*.K
-%% M(39)                        M5*.ArrB1
-%% M(40)                        M5*.ArrB2
-%% M(41)                        M6*
-%% M(42)                        M6*.G.GDP
-%% M(43)                        M6*.G
-%% M(44)                        M6*.G.GTP
-%% M(45)                        M6*.K
-%% M(46)                        M6*.ArrB1
-%% M(47)                        M6*.ArrB2 ];
+%% M(1)                        M0*
+%% M(2)                        M0*.G.GDP
+%% M(3)                        M0*.G
+%% M(4)                        M0*.G.GTP
+%% M(5)                        M0*.K
+%% M(6)                        M1*
+%% M(7)                        M1*.G.GDP
+%% M(8)                        M1*.G
+%% M(9)                        M1*.G.GTP
+%% M(10)                       M1*.K
+%% M(11)                       M1*.ArrB1
+%% M(12)                       M1*.ArrB2
+%% M(13)                       M2*
+%% M(14)                       M2*.G.GDP
+%% M(15)                       M2*.G
+%% M(16)                       M2*.G.GTP
+%% M(17)                       M2*.K
+%% M(18)                       M2*.ArrB1
+%% M(19)                       M2*.ArrB2
+%% M(20)                       M3*
+%% M(21)                       M3*.G.GDP
+%% M(22)                       M3*.G
+%% M(23)                       M3*.G.GTP
+%% M(24)                       M3*.K
+%% M(25)                       M3*.ArrB1
+%% M(26)                       M3*.ArrB2
+%% M(27)                       M4*
+%% M(28)                       M4*.G.GDP
+%% M(29)                       M4*.G
+%% M(30)                       M4*.G.GTP
+%% M(31)                       M4*.K
+%% M(32)                       M4*.ArrB1
+%% M(33)                       M4*.ArrB2
+%% M(34)                       M5*
+%% M(35)                       M5*.G.GDP
+%% M(36)                       M5*.G
+%% M(37)                       M5*.G.GTP
+%% M(38)                       M5*.K
+%% M(39)                       M5*.ArrB1
+%% M(40)                       M5*.ArrB2
+%% M(41)                       M6*
+%% M(42)                       M6*.G.GDP
+%% M(43)                       M6*.G
+%% M(44)                       M6*.G.GTP
+%% M(45)                       M6*.K
+%% M(46)                       M6*.ArrB1
+%% M(47)                       M6*.ArrB2 ];
 
 
+%%
+M(1) = 4;
+M(48) = M(1)*9;
 
+t = 0;
+%%
+tmax = 5;
+tcrit = 0.1*tmax;
+%%
+tflash = 1.0;
+tjump = tflash;
+tracker =0;
+tracker2 = 0;
+counter =1;
+maxcounter=10000000;
+tic;
+% % GTP=1;
+% % PIP2 = 1;
+% % Ki =1;
+% % ATP =1;
+% % Arrb1 = 100;
+% % Arrb2 = 100;
+% % kmax = 1;
+% % KM =1;
+K = [ kG1,      kG2,        kG3,    kG4*GTP,        kG5, ...    
+       kP,       Ki,    kS*PIP2,         kO,         kC, ...
+   kk1*Ki,      kk2,    kk3*ATP,  kk4*Arrb1,  kk5*Arrb2, ...
+     kmax,       KM ];
+%%  K(1),    K(2),     K(3),      K(4),     K(5), 
+%%  K(6),    K(7),     K(8),      K(9),    K(10),
+%% K(11),   K(12),    K(13),     K(14),    K(15),  
+%% K(16),   K(17)
 
-K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...    
-      kP,       kI1,        kS*PIP2,    kO,         kC, ...
-      kk1*Ki,   kk2,        kk3*ATP,    kk4*Arrb1,  kk5*Arrb2, ...
-      kmax,     KM,         kI2,        kI3 ];
-  
-%%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
-%%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
-%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kk4*Arrb1,   K(15)=kk5*Arrb2,  
-%%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3
-
-
+no_rxns = 73;                   % number of reactions (total)
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
-h_tot=0;                        % What is this? 
-
-%% store time, molecule numbers in every 'time_step' sec
-tstore(1,1,runnum) = t;
-Xstore(1,:,runnum) = X;
-Mstore(1,:,runnum) = M;
-ttstore(1,1,runnum) = 0;
-prev_t_index = 1; % it stores the previous time intex
-%% store time, molecule numbers in every 'time_step' sec
-
+% clears out the variables for the outfile
+tstore(1,1) = t;                % stores time
+Xstore(1,:) = X;                % stores time 
+Mstore(1,:) = M;                % stores time
+ttstore (1) = 0;
 
 %% Build function to account for increase in arrestin binding affinity
 %% with more phosphates bound to melanopsin carboxyl tail.
@@ -166,11 +148,25 @@ Y = @(n) exp(-n);
 %% Begin the algorithm
 
 for counter=1:maxcounter
+    t
     % check if the final time has been reached or exceeded
     if t>tmax
         break;
     end
-      
+    
+    if t>= tflash
+        % signals the next flash
+       tflash = tflash + tjump;
+       % the signal hits all of the melanopsin, potentially activating 10%
+       % at any given flash. For a first approximation, assume that the 10%
+       % does distinguish between activated and inactive...Pool the M0 and
+       % M0*
+       numactivated = floor((M(48))*0.1); % For now just activate 10% every time floor it to keep from going negative
+       M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       % M0s from floors and ceilings.
+       M(1) = M(1) + numactivated; % same thing
+    end
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -235,9 +231,7 @@ for counter=1:maxcounter
 % PLC and G-protein activation/inactivation
     
     h(36) = K(6)*X(4)*X(2);         % PLC + Ga.GTP -- kP --> PLC*.Ga.GTP
-    h(37) = K(7)*X(5);              % PLC*.Ga.GTP -- kI1 --> PLC.Ga.GDP
-    h(74) = K(18)*X(9);             % PLC.Ga.GDP -- kI2 --> PLC + Ga.GDP
-    h(75) = K(19)*X(10)*X(3);       % Ga.GDP + Gbr -- kI3 --> G.GDP
+    h(37) = K(7)*X(5)*X(3);         % PLC*.Ga.GTP + Gbg -- kI --> PLC + G.GDP
                                     
 %%
 % Second Messenger Creation
@@ -300,7 +294,7 @@ for counter=1:maxcounter
     
     h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kk4*w(n) --> M6*ArrB1
     h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kk5*w(n) --> M6*ArrB2
-    
+        
 %%
 % SecM degradation
     h(73) = kmax*X(6)/(X(6)+KM);    % SecM -- delta --> 0, delta = kmax*SecM/(SecM+KM)
@@ -336,10 +330,10 @@ for counter=1:maxcounter
     elseif hw(1) < r && r <= sum(hw(1:2))
         M(2) = M(2) - 1;            
         M(1) = M(1) + 1;           
-        X(1) = X(1) + 1;            
+        X(1) = X(1) + 1;           
     elseif sum(hw(1:2)) < r && r <= sum(hw(1:3))
-        M(2) = M(2) - 1;            
-        M(3) = M(3) + 1;           
+        M(2) = M(2) - 1;           
+        M(3) = M(3) + 1;         
     elseif sum(hw(1:3)) < r && r <= sum(hw(1:4))
         M(3) = M(3) - 1;           
         M(4) = M(4) + 1;           
@@ -373,12 +367,12 @@ for counter=1:maxcounter
         % using M2
     elseif sum(hw(1:10)) < r && r <= sum(hw(1:11))
         M(13) = M(13) - 1;
-        X(1)  = X(1) - 1;
+        X(1) = X(1) - 1;
         M(14) = M(14) + 1;
     elseif sum(hw(1:11)) < r && r <= sum(hw(1:12))
         M(14) = M(14) - 1;
         M(13) = M(13) + 1;
-        X(1)  = X(1) + 1;
+        X(1) = X(1) + 1;
     elseif sum(hw(1:12)) < r && r <= sum(hw(1:13))
         M(14) = M(14) - 1;
         M(15) = M(15) + 1;
@@ -482,15 +476,9 @@ for counter=1:maxcounter
         X(4) = X(4) - 1;
         X(5) = X(5) + 1;
     elseif sum(hw(1:36)) < r && r <= sum(hw(1:37))
-        X(5) = X(5) - 1;
-        X(9) = X(9) + 1;
-    elseif sum(hw(1:73)) < r && r <= sum(hw(1:74))
-        X(9) = X(9) - 1;
-        X(4) = X(4) + 1;
-        X(10) = X(10) + 1;
-    elseif sum(hw(1:74)) < r && r <= sum(hw(1:75))
-        X(10) = X(10) - 1;
         X(3) = X(3) - 1;
+        X(5) = X(5) - 1;
+        X(4) = X(4) + 1;
         X(1) = X(1) + 1;
         
         % Second Messenger Creation
@@ -576,7 +564,7 @@ for counter=1:maxcounter
         M(38) = M(38) + 1;
     elseif sum(hw(1:56)) < r && r <= sum(hw(1:57))
         M(38) = M(38) - 1;
-        M(34) = M(34) + 1;     
+        M(34) = M(34) + 1;
     elseif sum(hw(1:57)) < r && r <= sum(hw(1:58))
         M(38) = M(38) - 1;
         M(45) = M(45) + 1;
@@ -591,7 +579,7 @@ for counter=1:maxcounter
         M(41) = M(41) + 1;
         
         % Arrestin Binding
-        % M1      
+        % M1        
     elseif sum(hw(1:60)) < r && r <= sum(hw(1:61))
         M(6) = M(6) - 1;
         M(11) = M(11) + 1;
@@ -599,7 +587,7 @@ for counter=1:maxcounter
         M(6) = M(6) - 1;
         M(12) = M(12) + 1;
         
-        %M2
+        %M2       
     elseif sum(hw(1:62)) < r && r <= sum(hw(1:63))
         M(13) = M(13) - 1;
         M(18) = M(18) + 1;
@@ -646,36 +634,25 @@ for counter=1:maxcounter
         M(1) = M(1);   % If the # of melanopsin cells is zero
     end
     
-    
-    %% store time, molecule numbers in every 'time_step' sec
-    time_index = floor(t/time_step) + 1; % an index for the current time
-    if time_index > floor(tmax/time_step)+1;
-        time_index = floor(tmax/time_step)+1;
+    % adjust the plotting matrix with the newfound information
+    ttstore(counter+1) = tt;
+    tstore(counter+1) = t;
+    %% New    
+    if h_tot==0
+        tstore(counter+1,1) = tmax;
     end
-    if time_index > prev_t_index
-        for j = (prev_t_index+1):time_index
-            tstore(j,1,runnum) = t;
-          %% New
-            if h_tot==0
-                tstore(j,1,runnum) = (j-1)*time_step;
-            end
-          %% New
-            Xstore(j,:,runnum) = X;
-            Mstore(j,:,runnum) = M;
-            ttstore(j,1,runnum) = tt;
-        end
-    end
-    prev_t_index = time_index;  
-    %% store time, molecule numbers in every 'time_step' sec
+    %% New
+    Xstore(counter+1,:) = X;
+    Mstore(counter+1,:) = M;
 
     
 % %     if t>19.89
 % %         keyboard;
 % %     end
-% % %    pause(0.2)
+% %    pause(0.2)
 % %     plot_matrx(tic,:) = [t X M];
 % % figure(1)    
-% %     % if the new t < tmax, repeat.  Else plot the results.
+%     if the new t < tmax, repeat.  Else plot the results.
 % %     subplot(2,1,1)
 % %     plot(M)
 % %     pause(0.1)
@@ -684,39 +661,36 @@ for counter=1:maxcounter
 % %    axis([0 14 0 100])
 % %    pause(0.1)
 % %    display(X(1))
-   %%display(X(5))
-   %%pause(1)
+% %    display(X(5))
+% %    pause(0.1)
 
-end % end of one realization
-% simstuff = {tstore,Mstore,Xstore};
-% save(sprintf('run%d',runnum),'simstuff')
-save('results.mat','tstore','Mstore','Xstore')
-end % end of all realizations
+    % record the maximal number of channels 
+    if max_chan < X(8)
+       max_chan = X(8);
+       maxchan_time = t;
+    end
+    % record the maximal number of channels
+end
+% % simstuff = {tstore,Mstore,Xstore};
+% % save(sprintf('run%d',runnum),'simstuff')
+tout = tstore;
+tout = tout';
+% % keyboard;
+Mout = [Mstore(:,1) Mstore(:,6) Mstore(:,13) Mstore(:,20) Mstore(:,27) Mstore(:,34) Mstore(:,41)];
+Xout = Xstore(:,7); % number of open channels
 
-%% compute mean and standard deviation
-Mx = mean(Xstore,3); % compute mean
-% '3' means averaging with respect to the 3rd dimension.
-Sx = std(Xstore,0,3); % compute standard deviation, '0' is a flag (do not change it)
-Mm = mean(Mstore,3);
-Sm = std(Mstore,0,3);
-%% compute mean and standard deviation
-
-save('results.mat','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm')
-
+% end
 %keyboard;
-%% plotting average
-% % figure(1)
-% % plot(tstore(:,1,1),Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41));
+%plotting!
+figure(1)
+plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
 %axis([0 tmax -1 100]);
-% % xlabel('time (/sec)'); ylabel('# of cells');
+xlabel('time (/sec)'); ylabel('# of cells');
+screen_size = get(0, 'ScreenSize');
+% % axis([0 6 0 7])
+set(1, 'Position', [0 0 0.75*screen_size(3) 0.75*screen_size(4) ] );
+export_fig('M','-pdf','-nocrop')
 figure(2)
-Edata = dlmread('EphysGraph.csv');
-
-plot(Edata(1291:end,2)-1.29,Edata(1291:end,5),'r')
-hold all
-opchan=Mx(:,8)./(Mx(:,7)+Mx(:,8));
-plot(tstore(:,1,1),opchan/max(opchan),'LineWidth',2,'Color','k') 
-% a ratio of the number of open channels out of the total number of
-% channels
-%% plotting average
-toc
+plot(tstore, Xstore(:,7)) % number of open channels
+% % 
+% % toc
