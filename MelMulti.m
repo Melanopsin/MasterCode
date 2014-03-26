@@ -1,9 +1,9 @@
 % Melanopsin2 will run a single run of the same code found in melanopsin.m
 
 % function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
-function MelMulti(dataset)
+% % function MelMulti(dataset)
 
-
+dataset=3
 
 % case 1 --- store prameters values you want in data.mat
 % case 2 --- store prameters values you want in data.mat
@@ -15,8 +15,8 @@ maxchan_time = 0;   % What are these?
 no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
 
 t = 0;
-tmax = 300;
-tflash = 100.0;                   % Time for second flash
+tmax = 120;
+tflash = 20.0;                   % Time for second flash
 tjump = tflash;                 % Time between flashes
 counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
@@ -28,6 +28,7 @@ switch dataset
     case 2
         load('data.mat')   
     case 3
+        Set_ICMulti
         load('multidata.mat')
     otherwise        
 end
@@ -158,9 +159,16 @@ Y = @(n) exp(-n);
 
 for counter=1:maxcounter
     % check if the final time has been reached or exceeded
+% %     if t>1000
+% %         keyboard;
+% %     end
+% %     
     if t>tmax
         break;
     end
+    
+    
+     
     
      if t>= tflash
         % signals the next flash
@@ -169,8 +177,8 @@ for counter=1:maxcounter
        % at any given flash. For a first approximation, assume that the 10%
        % does distinguish between activated and inactive...Pool the M0 and
        % M0*
-       numactivated = floor((M(48))*0.1); % For now just activate 10% every time floor it to keep from going negative
-       M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       numactivated = floor((M(48))*0.2); % For now just activate 10% every time floor it to keep from going negative
+% %        M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
        % M0s from floors and ceilings.
        M(1) = M(1) + numactivated; % same thing
     end
@@ -653,6 +661,11 @@ for counter=1:maxcounter
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1) = t;
+            
+            if h_tot==0
+                tstore(j,1) = (j-1)*time_step;
+            end
+
             Xstore(j,:) = X;
             Mstore(j,:) = M;
             ttstore(j,1) = tt;
@@ -694,18 +707,19 @@ save('results.mat','tstore','Mstore','Xstore','max_chan','maxchan_time')
 
 %keyboard;
 %% plotting
-figure(1)
-plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
-%axis([0 tmax -1 100]);
-xlabel('time (/sec)'); ylabel('# of cells');
+% % figure(1)
+% % plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
+% % %axis([0 tmax -1 100]);
+% % xlabel('time (/sec)'); ylabel('# of cells');
 screen_size = get(0, 'ScreenSize');
-% % axis([0 6 0 7])
-set(1, 'Position', [0 0 0.75*screen_size(3) 0.75*screen_size(4) ] );
-export_fig('M','-pdf','-nocrop')
+% % % % axis([0 6 0 7])
+% % set(1, 'Position', [0 0 0.75*screen_size(3) 0.75*screen_size(4) ] );
+% % export_fig('M','-pdf','-nocrop')
 figure(2)
-plot(tstore,Xstore(:,8)./(Xstore(:,7)+Xstore(:,8))) 
-set(1, 'Position', [0 0 0.75*screen_size(3) 0.75*screen_size(4) ] );
-export_fig('Ca','-pdf','-nocrop')
+openchan=Xstore(:,8)./(Xstore(:,7)+Xstore(:,8));
+plot(tstore(:,1),openchan/max(openchan)) 
+set(2, 'Position', [0 0 0.75*screen_size(3) 0.75*screen_size(4) ] );
+export_fig('RelResponse','-pdf','-nocrop')
 % a ratio of the number of open channels out of the total number of
 % channels
 %% plotting 

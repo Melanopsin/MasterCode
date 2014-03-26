@@ -8,7 +8,7 @@
 function MelMultiMulti(totrun,dataset)
 
 %% store time, molecule numbers in every 'time_step' sec for all runs
-tmax = 500;     % final time for each run
+ tmax = 120;     % final time for each run
 time_step=0.25; % maximum time step?
 % You record t, M, X in every time interval equal to time_step
 tstore = zeros(floor(tmax/time_step)+1,1,totrun);  
@@ -26,8 +26,8 @@ for runnum = 1:totrun
 
     no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
     t = 0;
-    tmax = 200;
-    tflash = 50.0;                   % Time for second flash
+% %     tmax = 120;
+    tflash = 20.0;                   % Time for second flash
     tjump = tflash;                 % Time between flashes
 
     counter =1; % counter counts the number of time iterations.
@@ -41,6 +41,7 @@ switch dataset
     case 2        
         load('erika.mat') 
     case 3
+        Set_ICMulti
         load('multidata.mat')
     otherwise       
 end
@@ -177,8 +178,8 @@ for counter=1:maxcounter
        % at any given flash. For a first approximation, assume that the 10%
        % does distinguish between activated and inactive...Pool the M0 and
        % M0*
-       numactivated = floor((M(48))*0.1); % For now just activate 10% every time floor it to keep from going negative
-       M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       numactivated = floor((M(48))*0.2); % For now just activate 10% every time floor it to keep from going negative
+% %        M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
        % M0s from floors and ceilings.
        M(1) = M(1) + numactivated; % same thing
     end
@@ -710,7 +711,8 @@ plot(tstore(:,1,1),Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41))
 %axis([0 tmax -1 100]);
 xlabel('time (/sec)'); ylabel('# of cells');
 figure(2)
-plot(tstore(:,1,1),Mx(:,8)./(Mx(:,7)+Mx(:,8))) 
+opchan = Mx(:,8)./(Mx(:,7)+Mx(:,8));
+plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k') 
 % a ratio of the number of open channels out of the total number of
 % channels
 %% plotting average
