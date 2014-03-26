@@ -1,99 +1,42 @@
 %% Set initial conditions for Melanopsin.m, Melanopsin2.m,
 %% and Melanopsin2_count.m
 %% Initial values are stored in 'data.mat'
-% % Moley =10;
-% % Arrb1 =floor(10*Moley);
-% % Arrb2 = floor(10*Moley);
-% % 
-% % GTP = 1;
-% % PIP2 =1.5;
-% % Ki = 1;
-% % ATP = 1;
-% % kmax =5;
-% % KM =1;
-% % 
-% % 
-% % kG1 = 57;
-% % kG2 = 10;
-% % kG3 = 10;
-% % kG4 = 10;
-% % kG5 = 150;
-% % kP = .009;
-% % kI1 = 200;
-% % kI2=10;
-% % kI3=10;
-% % kS = 125;
-% % kO = .2;
-% % kC = 2;
-% % kk1 = 15;
-% % kk2 = 1.6;
-% % kk3 = 1;
-% % kk4 = 1;
-% % kk5 = 1;
-
-% % Moley= 10
-% % Arrb1= 100
-% % Arrb2= 100
-% % GTP= 1
-% % PIP2= 1.5000
-% % Ki= 1
-% % ATP= 1
-% % kmax= 6.5000
-% % KM= 4.5000
-% % kG1= 6.1300
-% % kG2= 0.0106
-% % kG3= 0.5759
-% % kG4= 0.5443
-% % kG5= 3.5000
-% % kP= 1
-% % kI1= 15
-% % kI2= 0.6730
-% % kI3= 4.0000e-04
-% % kS= 16.0733
-% % kO= 0.0800
-% % kC= 0.6000
-% % kk1= 50
-% % kk2= 0.0861
-% % kk3= 10.0602
-% % kk4= 9.7004
-% % kk5= 9.9005
-
 Moley =10;
 Arrb1 =floor(10*Moley);
 Arrb2 = floor(10*Moley);
 
 GTP = 1; 
 PIP2 =1.5;
-Ki = 40;
+Ki = 1;
 ATP = 1;
-kmax =50;
+kmax =5;
 KM =1;
 
 
-kG1 =  10.0;
-kG2 =   4.4;
-kG3 =  10.0;
-kG4 =   7.6;
-kG5 =  10.9;
-kP =    5.0;
-kI1 =   14.8;
-kI2 =   7.0;
-kI3 =   5.0;
-kS  =  10.0;
-kO  =   0.7;
-kC  =   25;
-kk1 =   150.0;
-kk2 =   150;
-kk3 =   500.0;
-kk4 =   500.0;
-kk5 =   500.0;
+kG1 = 57;
+kG2 = 10;
+kG3 = 10;
+kG4 = 10;
+kG5 = 150;
+kP = .009;
+kI1 = 200;
+kI2=10;
+kI3=10;
+kS = 125;
+kO = .2;
+kC = 2;
+kk1 = 15;
+kk2 = 1.6;
+kk3 = 1;
+kk4 = 1;
+kk5 = 1;
 
 
 X = zeros(1,10);
 M = zeros(1,48);
 
 %% SPECIES: X = [
-%% X(1)           G.GDP
+%% X(1)           G.GDP 
 X(1) = floor(3*Moley);
 %% X(2)           Ga.GTP
 %% X(3)           Gbg

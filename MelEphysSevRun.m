@@ -8,8 +8,7 @@
 % % function MelEphysSevRun(totrun,dataset)
 clear all
 close all
-hold all
-totrun = 500;
+totrun = 100;
 dataset = 3;
 %% store time, molecule numbers in every 'time_step' sec for all runs
 tmax = 15;     % final time for each run
@@ -321,12 +320,6 @@ for counter=1:maxcounter
     t = t + tt;
     % pick a random number and use the weights to "select" an action
     r = rand(1,1);
-    
-    %% New
-    if h_tot==0
-        r = 10;
-    end
-    %% New
     
     % based on r, make a decision
     % Using M0
@@ -656,11 +649,6 @@ for counter=1:maxcounter
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1,runnum) = t;
-          %% New
-            if h_tot==0
-                tstore(j,1,runnum) = (j-1)*time_step;
-            end
-          %% New
             Xstore(j,:,runnum) = X;
             Mstore(j,:,runnum) = M;
             ttstore(j,1,runnum) = tt;
@@ -716,7 +704,7 @@ Edata = dlmread('EphysGraph.csv');
 plot(Edata(1291:end,2)-1.29,Edata(1291:end,5),'r')
 hold all
 opchan=Mx(:,8)./(Mx(:,7)+Mx(:,8));
-plot(tstore(:,1,1),opchan/max(opchan),'LineWidth',2) 
+plot(tstore(:,1,1),opchan/max(opchan),'LineWidth',2,'Color','k') 
 % a ratio of the number of open channels out of the total number of
 % channels
 %% plotting average

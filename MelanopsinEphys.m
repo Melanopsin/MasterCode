@@ -127,8 +127,7 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
 %%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3
 
 h = zeros(no_rxns,1);           % initialize the hazard vector
-%%
-h_tot=0; % erase
+
 
 %% store time, molecule numbers in every 'time_step' sec
 time_step=0.25; % You record t, M, X in every time interval equal to time_step
@@ -159,7 +158,6 @@ Y = @(n) exp(-n);
 
 for counter=1:maxcounter
     % check if the final time has been reached or exceeded
-    [t h_tot]
     if t>tmax
         break;
     end
@@ -313,12 +311,6 @@ for counter=1:maxcounter
     t = t + tt;
     % pick a random number and use the weights to "select" an action
     r = rand(1,1);
-    
-    %% New
-    if h_tot==0
-        r = 10;
-    end
-    %% New
     
     % based on r, make a decision
     % Using M0
@@ -648,17 +640,12 @@ for counter=1:maxcounter
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1) = t;
-          %% New
-            if h_tot==0
-                tstore(j,1) = (j-1)*time_step;
-            end
-          %% New
             Xstore(j,:) = X;
             Mstore(j,:) = M;
             ttstore(j,1) = tt;
         end
     end
-    prev_t_index = time_index;  
+    prev_t_index = time_index;    
     %% store time, molecule numbers in every 'time_step' sec
    
  
@@ -700,7 +687,7 @@ save('results.mat','tstore','Mstore','Xstore','max_chan','maxchan_time')
 % % xlabel('time (/sec)'); ylabel('# of cells');
 % % close all
 figure(2)
-Edata = dlmread('EphysGraph.csv');
+Edata = dlmread('EphysGraph.csv')
 
 plot(Edata(1291:end,2)-1.29,Edata(1291:end,5),'r')
 hold all

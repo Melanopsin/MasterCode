@@ -26,8 +26,8 @@ for runnum = 1:totrun
 
     no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
     t = 0;
-    tmax = 15;
-    tflash = 0.0;                   % Time for second flash
+    tmax = 200;
+    tflash = 50.0;                   % Time for second flash
     tjump = tflash;                 % Time between flashes
 
     counter =1; % counter counts the number of time iterations.
@@ -41,7 +41,6 @@ switch dataset
     case 2        
         load('erika.mat') 
     case 3
-        Set_ICMulti
         load('multidata.mat')
     otherwise       
 end
@@ -332,12 +331,6 @@ for counter=1:maxcounter
     t = t + tt;
     % pick a random number and use the weights to "select" an action
     r = rand(1,1);
-    
-    %% New
-    if h_tot==0
-        r = 10;
-    end
-    %% New
     
     % based on r, make a decision
     % Using M0
@@ -667,11 +660,6 @@ for counter=1:maxcounter
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1,runnum) = t;
-          %% New
-            if h_tot==0
-                tstore(j,1,runnum) = (j-1)*time_step;
-            end
-          %% New
             Xstore(j,:,runnum) = X;
             Mstore(j,:,runnum) = M;
             ttstore(j,1,runnum) = tt;
