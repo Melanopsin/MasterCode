@@ -6,15 +6,21 @@
 % run<number>.mat.
 
 function Melanopsin(totrun,dataset,tmax,flashint)
+% % %% to set a random seed
+% % rand('seed',sum(100*clock))
+% % %% to set a random seed
 
 %% store time, molecule numbers in every 'time_step' sec for all runs
 % % tmax = 100;     % final time for each run
-time_step=0.25; % maximum time step?
+time_step=0.25; % maximum time step, before we set as 0.25
+counter =1; % counter counts the number of time iterations.
+maxcounter=10000000;
 % You record t, M, X in every time interval equal to time_step
-tstore = zeros(floor(tmax/time_step)+1,1,totrun);  
-Xstore = zeros(floor(tmax/time_step)+1,10,totrun); % <----These should be inputs no hard code size(X,2)=10
-Mstore = zeros(floor(tmax/time_step)+1,47,totrun); % <----These should be inputs no hard codesize(M,2)=47
-ttstore = zeros(floor(tmax/time_step)+1,1,totrun); 
+Xstore = zeros(floor(tmax/time_step)+1,12,totrun); 
+Mstore = zeros(floor(tmax/time_step)+1,49,totrun); 
+ttstore = zeros(floor(tmax/time_step)+1,1,totrun);
+% % R1store = zeros(maxcounter,1,totrun);  
+% % R2store = zeros(maxcounter,1,totrun); 
 %% store time, molecule numbers in every 'time_step' sec for all runs
 
 tic;
@@ -32,8 +38,6 @@ t = 0;
 % % tmax = 15;
 tflash = flashint;                   % Time for second flash
 tjump = tflash;                 % Time between flashes
-counter =1; % counter counts the number of time iterations.
-maxcounter=10000000;
 
 switch dataset    
     
@@ -44,13 +48,25 @@ switch dataset
         Set_ICMulti
         load('multidata.mat') % multi flash
     case 3
+        Set_IC_beta1
         load('beta1.mat')     % overexpressed beta arrestin1
     case 4
+        Set_IC_beta2
         load('beta2.mat')     % overexpressed beta arrestin2        
-    otherwise  
+    otherwise 
+        Set_IC_caimage
         load('caimage.mat')   % calcium imaging is the default
         
 end
+
+%% erase later
+kUB1 = 0;      
+kUB2 = 0;       
+kDe = 0;
+M(49)=0;
+X(11)=20;
+X(12)=20;
+%% erase later
 
 % MODEL OF MELANOPSIN ACTIVATION
 
@@ -69,6 +85,9 @@ end
 % Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
 % Mn* + ArrB1 -- kB1 w(n) --> Mn.ArrB1
 % Mn* + ArrB2 -- kB2 w(n) --> Mn.ArrB2
+% Mn.ArrB1 -- kUB1 w(n) --> Mp + ArrB1
+% Mn.ArrB2 -- kUB2 w(n) --> Mp + ArrB2
+% Mp -- kDe w(6) --> M0
 
 %% SPECIES: X = [
 %% X(1)           G.GDP
@@ -142,7 +161,8 @@ tic;
 K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...    
       kP,       kI1,        kS*PIP2,    kO,         kC, ...
       kk1*Ki,   kk2,        kk3*ATP,    kk4*Arrb1,  kk5*Arrb2, ...
-      kmax,     KM,         kI2,        kI3 ];
+      kmax,     KM,         kI2,        kI3, ... 
+      kUB1      kUB2        kDe];
   
 %%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
 %%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
@@ -152,7 +172,9 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
 
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
+%% set initial values
 h_tot=0; % initialize h_tot
+h = zeros(no_rxns,1);  % initialize the hazard vector
 
 %% store time, molecule numbers in every 'time_step' sec
 time_step=0.25; % You record t, M, X in every time interval equal to time_step
@@ -168,8 +190,8 @@ Xstore(1,:,runnum) = X;
 Mstore(1,:,runnum) = M;
 ttstore(1,1,runnum) = 0;
 prev_t_index = 1; % it stores the previous time intex
-%% store time, molecule numbers in every 'time_step' sec
 
+%% set initial values
 
 
 %% Build function to account for increase in arrestin binding affinity
@@ -186,10 +208,10 @@ Y = @(n) exp(-n);
 
 for counter=1:maxcounter
     % check if the final time has been reached or exceeded
-    if t>tmax
+    if t>=tmax
         break;
     end
-    
+    t;
     
      if t>= tflash
         % signals the next flash
@@ -198,10 +220,14 @@ for counter=1:maxcounter
        % at any given flash. For a first approximation, assume that the 10%
        % does distinguish between activated and inactive...Pool the M0 and
        % M0*
-       numactivated = floor((M(48))*0.2); % For now just activate 10% every time floor it to keep from going negative
-% %        M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       numactivated = floor((M(48))*0.1); % For now just activate 10% every time floor it to keep from going negative   
+       M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       if M(48) < 0
+           M(48) = 0
+       else
        % M0s from floors and ceilings.
        M(1) = M(1) + numactivated; % same thing
+       end
     end
       
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -367,11 +393,19 @@ for counter=1:maxcounter
     h_tot = sum(h);                 % Sum of hazard "bins"
     hw = h/h_tot;                   % Normalized "bins"
     
+     
+    % record random number
+    R1 = rand(1,1);
+    R2 = rand(1,1);
+%     R1store(counter,1,runnum) = R1;  
+%     R2store(counter,1,runnum) = R2; 
+    
     % now pick a random number to step forward in time
     tt = -log(rand(1,1))/h_tot;
     t = t + tt;
     % pick a random number and use the weights to "select" an action
-    r = rand(1,1);
+    r = R2;
+    
     
     %% New
     if h_tot==0
@@ -838,7 +872,8 @@ for counter=1:maxcounter
 end % end of one realization
 % simstuff = {tstore,Mstore,Xstore};
 % save(sprintf('run%d',runnum),'simstuff')
-save('results.mat','tstore','Mstore','Xstore')
+save('results.mat','tstore','Time','Mstore','Xstore');%,'R1store','R2store')
+
 end % end of all realizations
 
 %% compute mean and standard deviation
@@ -849,19 +884,26 @@ Mm = mean(Mstore,3);
 Sm = std(Mstore,0,3);
 %% compute mean and standard deviation
 
-save('results.mat','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm')
+save('results.mat','Time','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm');%,'R1store','R2store')
+
+
 
 %keyboard;
 %% plotting average
 % % figure(1)
-% % plot(tstore(:,1,1),Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41));
+% % plot(Time,Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41));
 % % %axis([0 tmax -1 100]);
 % % xlabel('time (/sec)'); ylabel('# of cells');
 % % figure(2)
-% % plot(tstore(:,1,1),Mx(:,8)./(Mx(:,7)+Mx(:,8))) 
+% % plot(Time,Mx(:,8)./(Mx(:,7)+Mx(:,8)))
 figure(2)
 opchan = Mx(:,8)./(Mx(:,7)+Mx(:,8));
-plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
+% % plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
+% % % a ratio of the number of open channels out of the total number of
+% % % channels
+% % %% plotting average
+% % toc
+plot(Time,opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
 % a ratio of the number of open channels out of the total number of
 % channels
 %% plotting average

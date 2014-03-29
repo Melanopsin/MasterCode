@@ -40,7 +40,7 @@ PIP2 =1.5;
 Ki = 40;
 ATP = 1;
 kmax =50;
-KM =50;
+KM =1;
 
 
 kG1 =  10.0;
@@ -72,8 +72,8 @@ X(1) = floor(3*Moley);
 %% X(3)           Gbg
 %% X(4)           PLC
 %X(4)=12;
+X(4) = floor(1.2*Moley);
 %% X(5)           PLC*Ga.GTP
-X(5) = floor(1.2*Moley);
 %% X(6)           SecM
 %% X(7)           Channel-
 X(7) = 500;
@@ -81,7 +81,7 @@ X(7) = 500;
 
 %% MELANOPSIN COMPLEXES: M = [
 %% M(1)                        M0*
-M(1) = floor(8.6*0.92*Moley)*4;
+M(1) = floor(8.6*0.92*Moley);
 
 %% M(2)                        M0*.G.GDP
 %% M(3)                        M0*.G
