@@ -1,24 +1,10 @@
-% Melanopsin(totrun,dataset) will run the Gillespie algorithm code
-% for the number of runs specified (totrun) and using the initial values 
-% and deterministic rate constants for the specified dataset (dataset). Later once
-% the optimization code is finished the rate constants used will be from
-% the rates written to file by that routine. The realizations are saved in files called
-% run<number>.mat.
+% Melanopsin2 will run a single run of the same code found in melanopsin.m
 
-function Melanopsin(totrun,dataset,tmax,flashint)
+% function [tout Mout Xout max_chan maxchan_time] = Melanopsin2(dataset)
+function Melanopsin2(dataset)
 
-%% store time, molecule numbers in every 'time_step' sec for all runs
-% % tmax = 100;     % final time for each run
-time_step=0.25; % maximum time step?
-% You record t, M, X in every time interval equal to time_step
-tstore = zeros(floor(tmax/time_step)+1,1,totrun);  
-Xstore = zeros(floor(tmax/time_step)+1,10,totrun); % <----These should be inputs no hard code size(X,2)=10
-Mstore = zeros(floor(tmax/time_step)+1,47,totrun); % <----These should be inputs no hard codesize(M,2)=47
-ttstore = zeros(floor(tmax/time_step)+1,1,totrun); 
-%% store time, molecule numbers in every 'time_step' sec for all runs
 
-tic;
-for runnum = 1:totrun
+
 % case 1 --- store prameters values you want in data.mat
 % case 2 --- store prameters values you want in data.mat
 
@@ -29,8 +15,8 @@ maxchan_time = 0;   % What are these?
 no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
 
 t = 0;
-% % tmax = 15;
-tflash = flashint;                   % Time for second flash
+tmax = 15;
+tflash = 1000.0;                   % Time for second flash
 tjump = tflash;                 % Time between flashes
 counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
@@ -46,7 +32,8 @@ switch dataset
     case 3
         load('beta1.mat')     % overexpressed beta arrestin1
     case 4
-        load('beta2.mat')     % overexpressed beta arrestin2        
+        load('beta2.mat')     % overexpressed beta arrestin2
+        
     otherwise  
         load('caimage.mat')   % calcium imaging is the default
         
@@ -67,8 +54,8 @@ end
 % SecM + Channel+ <-- kO/kC --> SecM.Channel-
 % Mn* + K <-- kK1/kK2 --> Mn*.K
 % Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
-% Mn* + ArrB1 -- kB1 w(n) --> Mn.ArrB1
-% Mn* + ArrB2 -- kB2 w(n) --> Mn.ArrB2
+% Mn* + ArrB1 -- kB1 w(n) --> Mn*.ArrB1
+% Mn* + ArrB2 -- kB2 w(n) --> Mn*.ArrB2
 
 %% SPECIES: X = [
 %% X(1)           G.GDP
@@ -81,8 +68,6 @@ end
 %% X(8)           SecM.Channel+
 %% X(9)           PLC.Ga.GDP
 %% X(10)          Ga.GDP    ];
-%% X(11)          Beta1;
-%% X(12)          Beta2;
 
 
 %% MELANOPSIN COMPLEXES: M = [
@@ -133,8 +118,7 @@ end
 %% M(45)                       M6*.K
 %% M(46)                       M6*.ArrB1
 %% M(47)                       M6*.ArrB2 ];
-%% M(48)                       M0
-%% M(49)                       MP
+
 
 
 tic;
@@ -147,8 +131,7 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
 %%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
 %%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
 %%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kB1*Arrb1,   K(15)=kB2*Arrb2,  
-%%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3         
-%%  K(20) = kUB1    K(21) = kUB2  K(22) = kDe
+%%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3
 
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
@@ -161,15 +144,12 @@ Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
 Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
 ttstore = zeros(floor(tmax/time_step)+1,1);
 
-
-%% store time, molecule numbers in every 'time_step' sec
-tstore(1,1,runnum) = t;
-Xstore(1,:,runnum) = X;
-Mstore(1,:,runnum) = M;
-ttstore(1,1,runnum) = 0;
+tstore(1,1) = t;
+Xstore(1,:) = X;
+Mstore(1,:) = M;
+ttstore(1,1) = 0;
 prev_t_index = 1; % it stores the previous time intex
 %% store time, molecule numbers in every 'time_step' sec
-
 
 
 %% Build function to account for increase in arrestin binding affinity
@@ -191,7 +171,8 @@ for counter=1:maxcounter
     end
     
     
-     if t>= tflash
+    
+    if t>= tflash
         % signals the next flash
        tflash = tflash + tjump;
        % the signal hits all of the melanopsin, potentially activating 10%
@@ -203,7 +184,7 @@ for counter=1:maxcounter
        % M0s from floors and ceilings.
        M(1) = M(1) + numactivated; % same thing
     end
-      
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -316,47 +297,28 @@ for counter=1:maxcounter
 %%
 % Arrestin Binding
     
-    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kB1*w(n) --> M1.ArrB1
-    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kB2*w(n) --> M1.ArrB2
+    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kB1*w(n) --> M1*ArrB1
+    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kB2*w(n) --> M1*ArrB2
     
-    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kB1*w(n) --> M2.ArrB1
-    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kB2*w(n) --> M2.ArrB2
+    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kB1*w(n) --> M2*ArrB1
+    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kB2*w(n) --> M2*ArrB2
 
-    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
-    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
+    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kB1*w(n) --> M3*ArrB1
+    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kB2*w(n) --> M3*ArrB2
     
-    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
-    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
+    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kB1*w(n) --> M4*ArrB1
+    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kB2*w(n) --> M4*ArrB2
     
-    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
-    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
+    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kB1*w(n) --> M5*ArrB1
+    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kB2*w(n) --> M5*ArrB2
     
-    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
-    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
-    
+    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kB1*w(n) --> M6*ArrB1
+    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kB2*w(n) --> M6*ArrB2
+        
 %%
 % SecM degradation
     h(73) = kmax*X(6)/(X(6)+KM);    % SecM -- delta --> 0, delta = kmax*SecM/(SecM+KM)
-    
-%%
-% Arrestin unbinding and deactivation
 
-    h(76) = W(1)*K(20)*M(11);       % M1.ArrB1 -- kUB1 --> MP + ArrB1
-    h(77) = W(2)*K(20)*M(18);       % M2.ArrB1 -- kUB1 --> MP + ArrB1
-    h(78) = W(3)*K(20)*M(25);       % M3.ArrB1 -- kUB1 --> MP + ArrB1
-    h(79) = W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
-    h(80) = W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
-    h(81) = W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
-    
-    h(82) = W(1)*K(21)*M(12);       % M1.ArrB2 -- kUB2 --> MP + ArrB2
-    h(83) = W(2)*K(21)*M(19);       % M2.ArrB2 -- kUB2 --> MP + ArrB2
-    h(84) = W(3)*K(21)*M(26);       % M3.ArrB2 -- kUB2 --> MP + ArrB2
-    h(85) = W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
-    h(86) = W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
-    h(87) = W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
-    
-    h(88) = W(6)*K(22)*M(49);       % MP -- kDe --> M0
-    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -388,10 +350,10 @@ for counter=1:maxcounter
     elseif hw(1) < r && r <= sum(hw(1:2))
         M(2) = M(2) - 1;            
         M(1) = M(1) + 1;           
-        X(1) = X(1) + 1;            
+        X(1) = X(1) + 1;           
     elseif sum(hw(1:2)) < r && r <= sum(hw(1:3))
-        M(2) = M(2) - 1;            
-        M(3) = M(3) + 1;           
+        M(2) = M(2) - 1;           
+        M(3) = M(3) + 1;         
     elseif sum(hw(1:3)) < r && r <= sum(hw(1:4))
         M(3) = M(3) - 1;           
         M(4) = M(4) + 1;           
@@ -425,12 +387,12 @@ for counter=1:maxcounter
         % using M2
     elseif sum(hw(1:10)) < r && r <= sum(hw(1:11))
         M(13) = M(13) - 1;
-        X(1)  = X(1) - 1;
+        X(1) = X(1) - 1;
         M(14) = M(14) + 1;
     elseif sum(hw(1:11)) < r && r <= sum(hw(1:12))
         M(14) = M(14) - 1;
         M(13) = M(13) + 1;
-        X(1)  = X(1) + 1;
+        X(1) = X(1) + 1;
     elseif sum(hw(1:12)) < r && r <= sum(hw(1:13))
         M(14) = M(14) - 1;
         M(15) = M(15) + 1;
@@ -628,7 +590,7 @@ for counter=1:maxcounter
         M(38) = M(38) + 1;
     elseif sum(hw(1:56)) < r && r <= sum(hw(1:57))
         M(38) = M(38) - 1;
-        M(34) = M(34) + 1;     
+        M(34) = M(34) + 1;
     elseif sum(hw(1:57)) < r && r <= sum(hw(1:58))
         M(38) = M(38) - 1;
         M(45) = M(45) + 1;
@@ -643,7 +605,7 @@ for counter=1:maxcounter
         M(41) = M(41) + 1;
         
         % Arrestin Binding
-        % M1      
+        % M1        
     elseif sum(hw(1:60)) < r && r <= sum(hw(1:61))
         M(6) = M(6) - 1;
         M(11) = M(11) + 1;
@@ -651,7 +613,7 @@ for counter=1:maxcounter
         M(6) = M(6) - 1;
         M(12) = M(12) + 1;
         
-        %M2
+        %M2       
     elseif sum(hw(1:62)) < r && r <= sum(hw(1:63))
         M(13) = M(13) - 1;
         M(18) = M(18) + 1;
@@ -696,104 +658,9 @@ for counter=1:maxcounter
         X(6) = X(6) - 1;
     else
         M(1) = M(1);   % If the # of melanopsin cells is zero
-   
+    end
     
-        % Arresin unbinding 
-        
-        
-    h(77) = W(2)*K(20)*M(18);       % M2.ArrB1 -- kUB1 --> MP + ArrB1
-    h(78) = W(3)*K(20)*M(25);       % M3.ArrB1 -- kUB1 --> MP + ArrB1
-    h(79) = W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
-    h(80) = W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
-    h(81) = W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
     
-    h(82) = W(1)*K(21)*M(12);       % M1.ArrB2 -- kUB2 --> MP + ArrB2
-    h(83) = W(2)*K(21)*M(19);       % M2.ArrB2 -- kUB2 --> MP + ArrB2
-    h(84) = W(3)*K(21)*M(26);       % M3.ArrB2 -- kUB2 --> MP + ArrB2
-    h(85) = W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
-    h(86) = W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
-    h(87) = W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
-    
-    h(88) = W(6)*K(22)*M(49);       % MP -- kDe --> M0
-       
-    elseif sum(hw(1:75)) < r && r <= sum(hw(1:76))
-        
-         M(11) = M(11) - 1;
-         X(11) = X(11) + 1;
-         M(49) = M(49) + 1;
-       
-    elseif sum(hw(1:76)) < r && r <= sum(hw(1:77))
-        
-         M(18) = M(18) - 1;
-         X(11) = X(11) + 1;
-         M(49) = M(49) + 1;
-       
-    elseif sum(hw(1:77)) < r && r <= sum(hw(1:78))
-        
-         M(25) = M(25) - 1;
-         X(11) = X(11) + 1;
-         M(49) = M(49) + 1;
-        
-    elseif sum(hw(1:78)) < r && r <= sum(hw(1:79))
-        
-         M(32) = M(32) - 1;
-         X(11) = X(11) + 1;
-         M(49) = M(49) + 1;
-        
-    elseif sum(hw(1:79)) < r && r <= sum(hw(1:80))
-       
-         M(39) = M(39) - 1;
-         X(11) = X(11) + 1;
-         M(49) = M(49) + 1;
-        
-    elseif sum(hw(1:80)) < r && r <= sum(hw(1:81))
-       
-         M(46) = M(46) - 1;
-         X(11) = X(11) + 1;
-         M(49) = M(49) + 1;
-        
-    elseif sum(hw(1:81)) < r && r <= sum(hw(1:82))
-       
-         M(12) = M(12) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
-         
-    elseif sum(hw(1:82)) < r && r <= sum(hw(1:83))
-       
-         M(19) = M(19) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
-  
-    elseif sum(hw(1:83)) < r && r <= sum(hw(1:84))
-        
-         M(26) = M(26) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
-
-    elseif sum(hw(1:84)) < r && r <= sum(hw(1:85))
-        
-         M(33) = M(33) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
- 
-    elseif sum(hw(1:85)) < r && r <= sum(hw(1:86))
-        
-         M(40) = M(40) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
- 
-    elseif sum(hw(1:86)) < r && r <= sum(hw(1:87))
-        
-         M(47) = M(47) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
- 
-    elseif sum(hw(1:87)) < r && r <= sum(hw(1:88))
-        
-         M(48) = M(48) + 1;
-         M(49) = M(49) - 1;
-         
-        
     %% store time, molecule numbers in every 'time_step' sec
     time_index = floor(t/time_step) + 1; % an index for the current time
     if time_index > floor(tmax/time_step)+1;
@@ -801,28 +668,28 @@ for counter=1:maxcounter
     end
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
-            tstore(j,1,runnum) = t;
+            tstore(j,1) = t;
           %% New
             if h_tot==0
-                tstore(j,1,runnum) = (j-1)*time_step;
+                tstore(j,1) = (j-1)*time_step;
             end
           %% New
-            Xstore(j,:,runnum) = X;
-            Mstore(j,:,runnum) = M;
-            ttstore(j,1,runnum) = tt;
+            Xstore(j,:) = X;
+            Mstore(j,:) = M;
+            ttstore(j,1) = tt;
         end
     end
-    prev_t_index = time_index;  
+    prev_t_index = time_index;    
     %% store time, molecule numbers in every 'time_step' sec
-
-    
+   
+ 
 % %     if t>19.89
 % %         keyboard;
 % %     end
-% % %    pause(0.2)
+% %    pause(0.2)
 % %     plot_matrx(tic,:) = [t X M];
 % % figure(1)    
-% %     % if the new t < tmax, repeat.  Else plot the results.
+%     if the new t < tmax, repeat.  Else plot the results.
 % %     subplot(2,1,1)
 % %     plot(M)
 % %     pause(0.1)
@@ -831,37 +698,30 @@ for counter=1:maxcounter
 % %    axis([0 14 0 100])
 % %    pause(0.1)
 % %    display(X(1))
-   %%display(X(5))
-   %%pause(1)
+% %    display(X(5))
+% %    pause(0.1)
 
-end % end of one realization
-% simstuff = {tstore,Mstore,Xstore};
-% save(sprintf('run%d',runnum),'simstuff')
-save('results.mat','tstore','Mstore','Xstore')
-end % end of all realizations
+    %% record the maximal number of channels 
+    if max_chan < X(8)
+       max_chan = X(8);
+       maxchan_time = t;
+    end
+    %% record the maximal number of channels
+end
+% % simstuff = {tstore,Mstore,Xstore};
+% % save(sprintf('run%d',runnum),'simstuff')
 
-%% compute mean and standard deviation
-Mx = mean(Xstore,3); % compute mean
-% '3' means averaging with respect to the 3rd dimension.
-Sx = std(Xstore,0,3); % compute standard deviation, '0' is a flag (do not change it)
-Mm = mean(Mstore,3);
-Sm = std(Mstore,0,3);
-%% compute mean and standard deviation
-
-save('results.mat','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm')
+save('results.mat','tstore','Mstore','Xstore','max_chan','maxchan_time')
 
 %keyboard;
-%% plotting average
+%% plotting
 % % figure(1)
-% % plot(tstore(:,1,1),Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41));
+% % plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
 % % %axis([0 tmax -1 100]);
 % % xlabel('time (/sec)'); ylabel('# of cells');
-% % figure(2)
-% % plot(tstore(:,1,1),Mx(:,8)./(Mx(:,7)+Mx(:,8))) 
 figure(2)
 opchan = Mx(:,8)./(Mx(:,7)+Mx(:,8));
 plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
-% a ratio of the number of open channels out of the total number of
-% channels
-%% plotting average
+% channels revisit this we may need to revisit the number of channels
+%% plotting 
 toc

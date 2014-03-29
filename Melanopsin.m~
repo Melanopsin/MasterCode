@@ -778,21 +778,20 @@ for counter=1:maxcounter
  
     elseif sum(hw(1:85)) < r && r <= sum(hw(1:86))
         
-         M(40) = M(40) - 1;
+         M(40) = M(12) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
  
     elseif sum(hw(1:86)) < r && r <= sum(hw(1:87))
-        
-         M(47) = M(47) - 1;
-         X(12) = X(12) + 1;
-         M(49) = M(49) + 1;
  
-    elseif sum(hw(1:87)) < r && r <= sum(hw(1:88))
         
-         M(48) = M(48) + 1;
-         M(49) = M(49) - 1;
-         
+    elseif sum(hw(1:87)) < r && r <= sum(hw(1:88))
+
+        
+    
+        
+    
+        
         
     %% store time, molecule numbers in every 'time_step' sec
     time_index = floor(t/time_step) + 1; % an index for the current time
