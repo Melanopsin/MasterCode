@@ -6,7 +6,7 @@ GTP = 1;
 PIP2 =1.5;
 Ki = 1;
 ATP = 1;
-kmax =6.5;
+kmax =65;
 KM =4.5;
 
 
@@ -117,4 +117,4 @@ M(46)=0;
 %% M(49)                       MP
 M(49)=0;
 
-save('calimage.mat');
+save('caimage.mat');
