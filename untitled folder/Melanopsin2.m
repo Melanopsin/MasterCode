@@ -15,20 +15,28 @@ maxchan_time = 0;   % What are these?
 no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
 
 t = 0;
-tmax = 100;
+tmax = 15;
+tflash = 1000.0;                   % Time for second flash
+tjump = tflash;                 % Time between flashes
 counter =1; % counter counts the number of time iterations.
 maxcounter=10000000;
 
 switch dataset    
     
     case 1
-        load('erika.mat')  
+        MatchEphys
+        load('ephys.mat')     % electrophysiology
     case 2
-        load('data.mat') 
+        Set_ICMulti
+        load('multidata.mat') % multi flash
     case 3
-        load('ephys.mat')
+        load('beta1.mat')     % overexpressed beta arrestin1
+    case 4
+        load('beta2.mat')     % overexpressed beta arrestin2
         
-    otherwise        
+    otherwise  
+        load('caimage.mat')   % calcium imaging is the default
+        
 end
 
 % MODEL OF MELANOPSIN ACTIVATION
@@ -46,8 +54,8 @@ end
 % SecM + Channel+ <-- kO/kC --> SecM.Channel-
 % Mn* + K <-- kK1/kK2 --> Mn*.K
 % Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
-% Mn* + ArrB1 -- kK4 w(n) --> Mn*.ArrB1
-% Mn* + ArrB2 -- kK5 w(n) --> Mn*.ArrB2
+% Mn* + ArrB1 -- kB1 w(n) --> Mn*.ArrB1
+% Mn* + ArrB2 -- kB2 w(n) --> Mn*.ArrB2
 
 %% SPECIES: X = [
 %% X(1)           G.GDP
@@ -122,11 +130,12 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
   
 %%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
 %%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
-%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kk4*Arrb1,   K(15)=kk5*Arrb2,  
+%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kB1*Arrb1,   K(15)=kB2*Arrb2,  
 %%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3
 
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
+h_tot=0; % initialize h_tot
 
 %% store time, molecule numbers in every 'time_step' sec
 time_step=0.25; % You record t, M, X in every time interval equal to time_step
@@ -159,6 +168,21 @@ for counter=1:maxcounter
     % check if the final time has been reached or exceeded
     if t>tmax
         break;
+    end
+    
+    
+    
+    if t>= tflash
+        % signals the next flash
+       tflash = tflash + tjump;
+       % the signal hits all of the melanopsin, potentially activating 10%
+       % at any given flash. For a first approximation, assume that the 10%
+       % does distinguish between activated and inactive...Pool the M0 and
+       % M0*
+       numactivated = floor((M(48))*0.2); % For now just activate 10% every time floor it to keep from going negative
+% %        M(48) = M(48)-numactivated; % do it this way to keep it an integer and not risk losing 
+       % M0s from floors and ceilings.
+       M(1) = M(1) + numactivated; % same thing
     end
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -273,23 +297,23 @@ for counter=1:maxcounter
 %%
 % Arrestin Binding
     
-    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kk4*w(n) --> M1*ArrB1
-    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kk5*w(n) --> M1*ArrB2
+    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kB1*w(n) --> M1*ArrB1
+    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kB2*w(n) --> M1*ArrB2
     
-    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kk4*w(n) --> M2*ArrB1
-    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kk5*w(n) --> M2*ArrB2
+    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kB1*w(n) --> M2*ArrB1
+    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kB2*w(n) --> M2*ArrB2
 
-    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kk4*w(n) --> M3*ArrB1
-    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kk5*w(n) --> M3*ArrB2
+    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kB1*w(n) --> M3*ArrB1
+    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kB2*w(n) --> M3*ArrB2
     
-    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kk4*w(n) --> M4*ArrB1
-    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kk5*w(n) --> M4*ArrB2
+    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kB1*w(n) --> M4*ArrB1
+    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kB2*w(n) --> M4*ArrB2
     
-    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kk4*w(n) --> M5*ArrB1
-    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kk5*w(n) --> M5*ArrB2
+    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kB1*w(n) --> M5*ArrB1
+    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kB2*w(n) --> M5*ArrB2
     
-    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kk4*w(n) --> M6*ArrB1
-    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kk5*w(n) --> M6*ArrB2
+    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kB1*w(n) --> M6*ArrB1
+    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kB2*w(n) --> M6*ArrB2
         
 %%
 % SecM degradation
@@ -691,13 +715,13 @@ save('results.mat','tstore','Mstore','Xstore','max_chan','maxchan_time')
 
 %keyboard;
 %% plotting
-figure(1)
-plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
-%axis([0 tmax -1 100]);
-xlabel('time (/sec)'); ylabel('# of cells');
+% % figure(1)
+% % plot(tstore,Mstore(:,1)+Mstore(:,6)+Mstore(:,13)+Mstore(:,20)+Mstore(:,27)+Mstore(:,34)+Mstore(:,41));
+% % %axis([0 tmax -1 100]);
+% % xlabel('time (/sec)'); ylabel('# of cells');
 figure(2)
-plot(tstore,Xstore(:,8)./(Xstore(:,7)+Xstore(:,8))) 
-% a ratio of the number of open channels out of the total number of
-% channels
+opchan = Mx(:,8)./(Mx(:,7)+Mx(:,8));
+plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
+% channels revisit this we may need to redo things
 %% plotting 
 toc

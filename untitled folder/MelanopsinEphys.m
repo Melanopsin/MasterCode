@@ -28,6 +28,7 @@ switch dataset
     case 3
         MatchEphys
         load('ephys.mat')
+    
         
     otherwise        
 end
@@ -159,7 +160,7 @@ Y = @(n) exp(-n);
 
 for counter=1:maxcounter
     % check if the final time has been reached or exceeded
-    [t h_tot]
+    [t h_tot];
     if t>tmax
         break;
     end
