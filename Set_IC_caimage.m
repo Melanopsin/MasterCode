@@ -10,15 +10,15 @@ kmax =6.5; % increase -- increase deactivation, decrease -- decrease deactivatio
 KM =4.5;   % increase -- decrease deactivation, decrease -- increase deactivation
 
 
-kG1 = .613;  % increase -- shift peak left, decrease -- shift peak left 
-kG2 = .0106; % increase --
-kG3 = .5759; % increase --
-kG4 = .5443; % increase -- 
-kG5 = 3.5;   
-kP = 1;
-kI1 = 15;
-kI2=.6730;
-kI3=.0004;
+kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
+kG2 = .0106; % increase -- shift left, decrease -- shift right
+kG3 = .5759; % increase -- nothing clear, decrease -- decrease deactivation
+kG4 = .5443; % increase -- shfit left, decrease -- shift right, decrease deactivation
+kG5 = 3.5; %increase-- shift left(135) & faster deactivation for t>40, decrease--shift right & slower deactivation for t>40 
+kP = 1;% increase --not clear *more runs, decrease --delays activation & changes channel dynamics
+kI1 = 15;% *increase --10 folds runs 3x faster & faster deactivation equilibrium, decrease -- runs 10x slower 
+kI2=.6730;% *increase -- shift slightly left, lowers deactivation curve but at same rate, decrease-- increase deactivation curve\ deactivation impossible 
+kI3=.00004;% increase -- shift right & slower activation , decrease -- shift to right, slow deactivation
 kS = 16.0733;
 kO = .08;
 kC = .6;

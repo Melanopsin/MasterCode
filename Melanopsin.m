@@ -68,12 +68,12 @@ switch dataset
 end
 
 %% erase later
-kUB1 = 0;      
-kUB2 = 0;       
-kDe = 0;
-M(49)=0;
-X(11)=20;
-X(12)=20;
+% % kUB1 = 0;      
+% % kUB2 = 0;       
+% % kDe = 0;
+% % M(49)=0;
+% % X(11)=20;
+% % X(12)=20;
 %% erase later
 
 % MODEL OF MELANOPSIN ACTIVATION
