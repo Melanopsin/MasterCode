@@ -26,7 +26,7 @@ max_chan = 0;       % What are these?
 maxchan_time = 0;   % What are these?
 
 
-no_rxns = 75;                   % (<--- this is hardcode) number of reactions (total)
+no_rxns = 88;                   % (<--- this is hardcode) number of reactions (total)
 
 t = 0;
 % % tmax = 15;
@@ -694,27 +694,9 @@ for counter=1:maxcounter
         % SecM degradation
     elseif sum(hw(1:72)) < r && r <= sum(hw(1:73))
         X(6) = X(6) - 1;
-    else
-        M(1) = M(1);   % If the # of melanopsin cells is zero
-   
     
         % Arresin unbinding 
         
-        
-    h(77) = W(2)*K(20)*M(18);       % M2.ArrB1 -- kUB1 --> MP + ArrB1
-    h(78) = W(3)*K(20)*M(25);       % M3.ArrB1 -- kUB1 --> MP + ArrB1
-    h(79) = W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
-    h(80) = W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
-    h(81) = W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
-    
-    h(82) = W(1)*K(21)*M(12);       % M1.ArrB2 -- kUB2 --> MP + ArrB2
-    h(83) = W(2)*K(21)*M(19);       % M2.ArrB2 -- kUB2 --> MP + ArrB2
-    h(84) = W(3)*K(21)*M(26);       % M3.ArrB2 -- kUB2 --> MP + ArrB2
-    h(85) = W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
-    h(86) = W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
-    h(87) = W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
-    
-    h(88) = W(6)*K(22)*M(49);       % MP -- kDe --> M0
        
     elseif sum(hw(1:75)) < r && r <= sum(hw(1:76))
         
@@ -793,20 +775,39 @@ for counter=1:maxcounter
          M(48) = M(48) + 1;
          M(49) = M(49) - 1;
          
-        
+  
+         else
+        M(1) = M(1);   % If the # of melanopsin cells is zero
+   
+    end
+    
+    %% beginning, graph with Time
+    Time = [0:time_step:tmax]; 
+    %% beginning, graph with Time
+    
     %% store time, molecule numbers in every 'time_step' sec
-    time_index = floor(t/time_step) + 1; % an index for the current time
+    %% if h_tot==0, move time t to tflash
+    if h_tot==0
+        t = min(tflash,tmax);
+    end
+    %% if h_tot==0, move time t to tflash
+    
+     time_index = floor(t/time_step) + 1; % an index for the current time
+    
+    %% if time_index becomes larger than size of tstore 
+    %% (final time can be larger than tmax), 
+    %% make time_index equal to the the final index 
     if time_index > floor(tmax/time_step)+1;
         time_index = floor(tmax/time_step)+1;
     end
+    %% 
+    
+    
+    %% store time, molecule numbers in every 'time_step' sec
+    
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
             tstore(j,1,runnum) = t;
-          %% New
-            if h_tot==0
-                tstore(j,1,runnum) = (j-1)*time_step;
-            end
-          %% New
             Xstore(j,:,runnum) = X;
             Mstore(j,:,runnum) = M;
             ttstore(j,1,runnum) = tt;
