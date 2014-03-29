@@ -5,7 +5,14 @@
 % the rates written to file by that routine. The realizations are saved in files called
 % run<number>.mat.
 
-function Melanopsin(totrun,dataset,tmax,flashint)
+% % function Melanopsin(totrun,dataset,tmax,flashint)
+clear all
+totrun=20
+dataset=6
+tmax=60
+flashint=100
+
+% % clf
 % % %% to set a random seed
 % % rand('seed',sum(100*clock))
 % % %% to set a random seed
@@ -56,6 +63,7 @@ switch dataset
     otherwise 
         Set_IC_caimage
         load('caimage.mat')   % calcium imaging is the default
+        exp_data = dlmread('Evans_CaWT.csv');
         
 end
 
@@ -156,7 +164,6 @@ X(12)=20;
 %% M(49)                       MP
 
 
-tic;
 
 K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...    
       kP,       kI1,        kS*PIP2,    kO,         kC, ...
@@ -342,23 +349,23 @@ for counter=1:maxcounter
 %%
 % Arrestin Binding
     
-    h(61) = W(1)*K(14)*M(6);        % M1* + ArrB1 -- kB1*w(n) --> M1.ArrB1
-    h(62) = W(1)*K(15)*M(6);        % M1* + ArrB2 -- kB2*w(n) --> M1.ArrB2
+    h(61) = W(1)*K(14)*M(6)*X(11);        % M1* + ArrB1 -- kB1*w(n) --> M1.ArrB1
+    h(62) = W(1)*K(15)*M(6)*X(12);        % M1* + ArrB2 -- kB2*w(n) --> M1.ArrB2
     
-    h(63) = W(2)*K(14)*M(13);       % M2* + ArrB1 -- kB1*w(n) --> M2.ArrB1
-    h(64) = W(2)*K(15)*M(13);       % M2* + ArrB2 -- kB2*w(n) --> M2.ArrB2
+    h(63) = W(2)*K(14)*M(13)*X(11);       % M2* + ArrB1 -- kB1*w(n) --> M2.ArrB1
+    h(64) = W(2)*K(15)*M(13)*X(12);       % M2* + ArrB2 -- kB2*w(n) --> M2.ArrB2
 
-    h(65) = W(3)*K(14)*M(20);       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
-    h(66) = W(3)*K(15)*M(20);       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
+    h(65) = W(3)*K(14)*M(20)*X(11);       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
+    h(66) = W(3)*K(15)*M(20)*X(12);       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
     
-    h(67) = W(4)*K(14)*M(27);       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
-    h(68) = W(4)*K(15)*M(27);       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
+    h(67) = W(4)*K(14)*M(27)*X(11);       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
+    h(68) = W(4)*K(15)*M(27)*X(12);       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
     
-    h(69) = W(5)*K(14)*M(34);       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
-    h(70) = W(5)*K(15)*M(34);       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
+    h(69) = W(5)*K(14)*M(34)*X(11);       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
+    h(70) = W(5)*K(15)*M(34)*X(12);       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
     
-    h(71) = W(6)*K(14)*M(41);       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
-    h(72) = W(6)*K(15)*M(41);       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
+    h(71) = W(6)*K(14)*M(41)*X(11);       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
+    h(72) = W(6)*K(15)*M(41)*X(12);       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
     
 %%
 % SecM degradation
@@ -381,7 +388,7 @@ for counter=1:maxcounter
     h(86) = W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
     h(87) = W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
     
-    h(88) = W(6)*K(22)*M(49);       % MP -- kDe --> M0
+    h(88) = K(22)*M(49);       % MP -- kDe --> M0
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -887,6 +894,11 @@ Sm = std(Mstore,0,3);
 save('results.mat','Time','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm');%,'R1store','R2store')
 
 
+figure(2)
+plot(exp_data(:,1),exp_data(:,2),'y','LineWidth',4)
+% hold on
+grid on
+axis([0 tmax -0.05 1.05])
 
 %keyboard;
 %% plotting average
@@ -898,12 +910,16 @@ save('results.mat','Time','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm');%,'R1s
 % % plot(Time,Mx(:,8)./(Mx(:,7)+Mx(:,8)))
 figure(2)
 opchan = Mx(:,8)./(Mx(:,7)+Mx(:,8));
+
 % % plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
 % % % a ratio of the number of open channels out of the total number of
 % % % channels
 % % %% plotting average
 % % toc
-plot(Time,opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
+hold all
+plot(Time,opchan./max(opchan),'LineWidth',2)% a ratio of the number of open channels out of the total number of
+% hold on
+
 % a ratio of the number of open channels out of the total number of
 % channels
 %% plotting average
