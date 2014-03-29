@@ -6,15 +6,15 @@ GTP = 1;
 PIP2 =1.5;
 Ki = 1;
 ATP = 1;
-kmax =65;
-KM =4.5;
+kmax =6.5; % increase -- increase deactivation, decrease -- decrease deactivation
+KM =4.5;   % increase -- decrease deactivation, decrease -- increase deactivation
 
 
-kG1 = 6.13;
-kG2 = .0106;
-kG3 = .5759;
-kG4 = .5443;
-kG5 = 3.5;
+kG1 = .613;  % increase -- shift peak left, decrease -- shift peak left 
+kG2 = .0106; % increase --
+kG3 = .5759; % increase --
+kG4 = .5443; % increase -- 
+kG5 = 3.5;   
 kP = 1;
 kI1 = 15;
 kI2=.6730;
