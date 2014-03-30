@@ -7,7 +7,7 @@
 
 % % function Melanopsin(totrun,dataset,tmax,flashint)
 clear all
-totrun=20
+totrun=600
 dataset=6
 tmax=60
 flashint=100
@@ -29,7 +29,7 @@ ttstore = zeros(floor(tmax/time_step)+1,1,totrun);
 % % R1store = zeros(maxcounter,1,totrun);  
 % % R2store = zeros(maxcounter,1,totrun); 
 %% store time, molecule numbers in every 'time_step' sec for all runs
-
+slowmedown=1.0;
 tic;
 for runnum = 1:totrun
 % case 1 --- store prameters values you want in data.mat
@@ -173,7 +173,7 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
   
 %%  K(1)=kG1,       K(2)=kG2,     K(3)=kG3,      K(4)=kG4*GTP,      K(5)=kG5, 
 %%  K(6)=kP,        K(7)=kI1,     K(8)=kS*PIP2,  K(9)=kO,           K(10)=kC,
-%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kB1*Arrb1,   K(15)=kB2*Arrb2,  
+%%  K(11)=kk1*Ki,   K(12)=kk2,    K(13)=kk3*ATP, K(14)=kB1,   K(15)=kB2,  
 %%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3         
 %%  K(20) = kUB1    K(21) = kUB2  K(22) = kDe
 
@@ -219,6 +219,9 @@ for counter=1:maxcounter
         break;
     end
     t;
+     if M(1)<10
+         slowmedown=0.35;
+     end
     
      if t>= tflash
         % signals the next flash
@@ -349,23 +352,23 @@ for counter=1:maxcounter
 %%
 % Arrestin Binding
     
-    h(61) = W(1)*K(14)*M(6)*X(11);        % M1* + ArrB1 -- kB1*w(n) --> M1.ArrB1
-    h(62) = W(1)*K(15)*M(6)*X(12);        % M1* + ArrB2 -- kB2*w(n) --> M1.ArrB2
+    h(61) = W(1)*K(14)*M(6)*X(11)*slowmedown;        % M1* + ArrB1 -- kB1*w(n) --> M1.ArrB1
+    h(62) = W(1)*K(15)*M(6)*X(12)*slowmedown;        % M1* + ArrB2 -- kB2*w(n) --> M1.ArrB2
     
-    h(63) = W(2)*K(14)*M(13)*X(11);       % M2* + ArrB1 -- kB1*w(n) --> M2.ArrB1
-    h(64) = W(2)*K(15)*M(13)*X(12);       % M2* + ArrB2 -- kB2*w(n) --> M2.ArrB2
+    h(63) = W(2)*K(14)*M(13)*X(11)*slowmedown;       % M2* + ArrB1 -- kB1*w(n) --> M2.ArrB1
+    h(64) = W(2)*K(15)*M(13)*X(12)*slowmedown;       % M2* + ArrB2 -- kB2*w(n) --> M2.ArrB2
 
-    h(65) = W(3)*K(14)*M(20)*X(11);       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
-    h(66) = W(3)*K(15)*M(20)*X(12);       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
+    h(65) = W(3)*K(14)*M(20)*X(11)*slowmedown;       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
+    h(66) = W(3)*K(15)*M(20)*X(12)*slowmedown;       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
     
-    h(67) = W(4)*K(14)*M(27)*X(11);       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
-    h(68) = W(4)*K(15)*M(27)*X(12);       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
+    h(67) = W(4)*K(14)*M(27)*X(11)*slowmedown;       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
+    h(68) = W(4)*K(15)*M(27)*X(12)*slowmedown;       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
     
-    h(69) = W(5)*K(14)*M(34)*X(11);       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
-    h(70) = W(5)*K(15)*M(34)*X(12);       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
+    h(69) = W(5)*K(14)*M(34)*X(11)*slowmedown;       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
+    h(70) = W(5)*K(15)*M(34)*X(12)*slowmedown;       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
     
-    h(71) = W(6)*K(14)*M(41)*X(11);       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
-    h(72) = W(6)*K(15)*M(41)*X(12);       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
+    h(71) = W(6)*K(14)*M(41)*X(11)*slowmedown;       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
+    h(72) = W(6)*K(15)*M(41)*X(12)*slowmedown;       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
     
 %%
 % SecM degradation
