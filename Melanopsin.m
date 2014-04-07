@@ -51,6 +51,9 @@ switch dataset
     case 1
         MatchEphys
         load('ephys.mat')     % electrophysiology
+        Edata = dlmread('EphysGraph.csv');
+        exp_data = [Edata(1291:end,2)-1.29 Edata(1291:end,5)];
+
     case 2
         Set_ICMulti
         load('multidata.mat') % multi flash
@@ -67,6 +70,7 @@ switch dataset
         
 end
 
+%%%% These have been moved to the initial conditions
 %% erase later
 % % kUB1 = 0;      
 % % kUB2 = 0;       
