@@ -184,12 +184,12 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
 h = zeros(no_rxns,1);           % initialize the hazard vector
 
 %% set initial values
-h_tot=0; % initialize h_tot
-h = zeros(no_rxns,1);  % initialize the hazard vector
+%h_tot=0; % initialize h_tot
+%h = zeros(no_rxns,1);  % initialize the hazard vector
 
 %% store time, molecule numbers in every 'time_step' sec
-time_step=0.25; % You record t, M, X in every time interval equal to time_step
-tstore = zeros(floor(tmax/time_step)+1,1);
+%time_step=0.25; % You record t, M, X in every time interval equal to time_step
+%tstore = zeros(floor(tmax/time_step)+1,1);
 Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
 Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
 ttstore = zeros(floor(tmax/time_step)+1,1);

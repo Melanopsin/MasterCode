@@ -1,9 +1,9 @@
 %% Set initial conditions for Melanopsin.m, Melanopsin2.m,
 %% and Melanopsin2_count.m
 %% Initial values are stored in 'data.mat'
-Moley =10;
-Arrb1 =floor(10*Moley);
-Arrb2 = floor(10*Moley);
+%%Moley =10;
+%%Arrb1 =floor(10*Moley);
+%%Arrb2 = floor(10*Moley);
 
 GTP = 1; 
 PIP2 =1.5;
@@ -28,30 +28,39 @@ kC  =   25;
 kk1 =   150.0;
 kk2 =   150;
 kk3 =   500.0;
-kk4 =   500.0;
-kk5 =   500.0;
+kB1 =   500.0;
+kB2 =   500.0;
 
+kUB1 = 10;      
+kUB2 = 10;       
+kDe = 10;
 
 X = zeros(1,10);
-M = zeros(1,47);
+M = zeros(1,49);
 
 %% SPECIES: X = [
 %% X(1)           G.GDP 
-X(1) = floor(3*Moley);
+X(1) = floor(30);
 %% X(2)           Ga.GTP
 %% X(3)           Gbg
 %% X(4)           PLC
 %X(4)=12;
 %% X(5)           PLC*Ga.GTP
-X(5) = floor(1.2*Moley);
+%%X(5) = floor(1.2*Moley);
 %% X(6)           SecM
 %% X(7)           Channel-
 X(7) = 500;
 %% X(8)           SecM.Channel+ ];
+%% X(9)           PLC.Ga.GDP
+%% X(10)          Ga.GDP
+%% X(11)          Beta arrestin 1
+X(11)=20;
+%% X(12)          Beta arrestin 2
+X(12)=20;
 
 %% MELANOPSIN COMPLEXES: M = [
 %% M(1)                        M0*
-M(1) = floor(8.6*0.92*Moley);
+M(1) = floor(79);
 
 %% M(2)                        M0*.G.GDP
 %% M(3)                        M0*.G
@@ -99,5 +108,8 @@ M(1) = floor(8.6*0.92*Moley);
 %% M(45)                       M6*.K
 %% M(46)                       M6*.ArrB1
 %% M(47)                       M6*.ArrB2 ];
+%% M(48)                       M0
+%% M(49)                       MP
+M(49)=0;
 
 save('ephys.mat');
