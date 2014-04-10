@@ -14,45 +14,23 @@ KM =1;
 
 
 kG1 =  10.0;
-kG2 =   0.5;
+kG2 =   4.4;
 kG3 =  10.0;
-kG4 =   10.0;
-kG5 =  15.9;
-kP =    20.0;
+kG4 =   7.6;
+kG5 =  10.9;
+kP =    5.0;
 kI1 =   14.8;
-kI2 =   8.0;
-kI3 =   0.050;
+kI2 =   7.0;
+kI3 =   5.0;
 kS  =  10.0;
 kO  =   0.7;
 kC  =   25;
+kk1 =   150.0;
+kk2 =   150;
+kk3 =   500.0;
+kB1 =   500.0;
+kB2 =   500.0;
 
-=======
-kk1 =   15.0;
-kk2 =   15.0;
-kk3 =   50.0;
-kB1 =   50.0;
-kB2 =   50.0;
-
-% % kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
-% % kG2 = .0106; % increase -- shift left, decrease -- shift right
-% % kG3 = .5759; % increase -- nothing clear, decrease -- decrease deactivation
-% % kG4 = .5443; % increase -- shfit left, decrease -- shift right, decrease deactivation
-% % kG5 = 3.5; %increase-- shift left & faster deactivation for t>40, decrease--shift right & slower deactivation for t>40 
-% % kP = 1;% increase --not clear *more runs, decrease --delays activation & changes channel dynamics
-% % kI1 = 15;% *increase --increase folds runs faster & faster deactivation equilibrium, decrease -- runs slower 
-% % kI2=.6730;% *increase -- shift slightly left, lowers deactivation curve but at same rate, decrease-- increase deactivation curve\ deactivation impossible 
-% % kI3=.00004;% increase -- shift right & slower activation , decrease -- shift to right, slow deactivation
-% % kS = 16.0733; %increase -- no clear difference, decrease -- shift left
-% % kO = 0.08; % increase -- shift right, decrease -- no clear difference 
-% % kC = 0.6; % increase -- slows simulation way down shift peak left , decrease -- shift peak up speeds up simulation
-% % kk1 = 50;% increase -- no clear change, decrease -- no clear change
-% % kk2 = .0861; % increase -- no clear change, decrease -- shift right
-% % kk3 = 10.0602; % increase -- no clear change, decrease -- no clear change
-% % kB1 = 9.7004; % increase -- shift right, decrease -- higher peak
-% % kB2 = 9.905; % increase -- no clear change, decrease -- no clear change
-
-
->>>>>>> 9f00cb08457e141d3e506bb95c1466734f6e0372
 kUB1 = 10;      
 kUB2 = 10;       
 kDe = 10;
@@ -66,7 +44,7 @@ X(1) = floor(30);
 %% X(2)           Ga.GTP
 %% X(3)           Gbg
 %% X(4)           PLC
-X(4)=12;
+%X(4)=12;
 %% X(5)           PLC*Ga.GTP
 %%X(5) = floor(1.2*Moley);
 %% X(6)           SecM
