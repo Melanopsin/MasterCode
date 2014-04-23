@@ -7,7 +7,7 @@
 
 % % function Melanopsin(totrun,dataset,tmax,flashint)
 clear all
-totrun=100
+totrun=10
 dataset=6
 tmax=60
 flashint=100
@@ -49,10 +49,10 @@ tjump = tflash;                 % Time between flashes
 switch dataset    
     
     case 1
-        MatchEphys
+        Set_IC_ephys
         load('ephys.mat')     % electrophysiology
         Edata = dlmread('EphysGraph.csv');
-        exp_data = [Edata(1291:end,2)-1.29 Edata(1291:end,5)];
+        exp_data = [Edata(1100:end,2)-1.1 Edata(1100:end,5)];
 
     case 2
         Set_ICMulti
@@ -65,7 +65,7 @@ switch dataset
         load('beta2.mat')     % overexpressed beta arrestin2        
     otherwise 
         Set_IC_caimage
-        load('caimage.mat')   % calcium imaging is the default
+        load('caimage2.mat')   % calcium imaging is the default
         exp_data = dlmread('Evans_CaWT.csv');
         
 end
@@ -181,18 +181,19 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
 %%  K(16)=kmax,     K(17)=KM,     K(18)=kI2,     K(19)=kI3         
 %%  K(20) = kUB1    K(21) = kUB2  K(22) = kDe
 
-h = zeros(no_rxns,1);           % initialize the hazard vector
 
 %% set initial values
-%h_tot=0; % initialize h_tot
-%h = zeros(no_rxns,1);  % initialize the hazard vector
+h_tot=0; % initialize h_tot
+h = zeros(no_rxns,1);  % initialize the hazard vector
 
-%% store time, molecule numbers in every 'time_step' sec
-%time_step=0.25; % You record t, M, X in every time interval equal to time_step
-%tstore = zeros(floor(tmax/time_step)+1,1);
-Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
-Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
-ttstore = zeros(floor(tmax/time_step)+1,1);
+%% REASON
+% %% store time, molecule numbers in every 'time_step' sec
+% time_step=0.25; % You record t, M, X in every time interval equal to time_step
+% tstore = zeros(floor(tmax/time_step)+1,1);
+% Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
+% Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
+% ttstore = zeros(floor(tmax/time_step)+1,1);
+%% REASON
 
 
 %% store time, molecule numbers in every 'time_step' sec
