@@ -6,8 +6,8 @@
 % run<number>.mat.
 
 % % function Melanopsin(totrun,dataset,tmax,flashint)
-clear all
-close all
+% % clear all
+% % close all
 totrun=10
 dataset=1
 tmax=15
@@ -30,7 +30,9 @@ ttstore = zeros(floor(tmax/time_step)+1,1,totrun);
 % % R1store = zeros(maxcounter,1,totrun);  
 % % R2store = zeros(maxcounter,1,totrun); 
 %% store time, molecule numbers in every 'time_step' sec for all runs
-slowmedown=1.00;
+slowmedown=1.0;
+slowslow = slowmedown;
+slower = 1.0;
 tic;
 runone=0;
 for runnum = 1:totrun
@@ -233,8 +235,8 @@ for counter=1:maxcounter
         break;
     end
     t;
-     if M(1)<10
-         slowmedown=1.00;
+     if M(1)<20
+         slowmedown=slower;
      end
     
      if t>= tflash
@@ -895,7 +897,7 @@ for counter=1:maxcounter
 
 end % end of one realization
 
-
+slowmedown=slowslow;
 whattha=whattha+1
 % simstuff = {tstore,Mstore,Xstore};
 % save(sprintf('run%d',runnum),'simstuff')
