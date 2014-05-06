@@ -7,7 +7,7 @@ x=0:0.01:1;
 y=sin(2*pi*x);
 z=cos(2*pi*x);
 
-fignum = 1
+fignum = 2
 figure(fignum)
 plot(x,y)
 hold all
@@ -17,5 +17,5 @@ ylabel('I am the y-axis! (my units)')
 title('I am a supercool title')
 legend('sin(x)','cos(x)')
 screen_size = get(0, 'ScreenSize');
-set(fignum, 'Position', [0 0 0.5*screen_size(3) 0.5*screen_size(4) ] );
-export_fig('NoSoftMuFront','-pdf','-nocrop')
+set(fignum, 'Position', [0 0 0.75*screen_size(3) 0.5*screen_size(4) ] );
+export_fig('Ephys','-pdf','-nocrop')

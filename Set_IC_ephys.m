@@ -6,27 +6,27 @@
 %%Arrb2 = floor(10*Moley);
 
 GTP = 1; 
-PIP2 =1.5;
+PIP2 =2;
 Ki = 40;
 ATP = 1;
-kmax =50;
+kmax =80;
 KM =1;
 
 
-kG1 =  10.0;
+kG1 =  80.0;
 kG2 =   0.5;
 kG3 =  10.0;
-kG4 =   10.0;
-kG5 =  15.9;
+kG4 =  15.0;
+kG5 =  20;
 kP =    20.0;
 kI1 =   14.8;
 kI2 =   8.0;
 kI3 =   0.050;
 kS  =  10.0;
-kO  =   0.7;
-kC  =   25;
+kO  =   2;
+kC  =   40;
 
-=======
+%=======
 kk1 =   15.0;
 kk2 =   15.0;
 kk3 =   50.0;
@@ -52,7 +52,6 @@ kB2 =   50.0;
 % % kB2 = 9.905; % increase -- no clear change, decrease -- no clear change
 
 
->>>>>>> 9f00cb08457e141d3e506bb95c1466734f6e0372
 kUB1 = 10;      
 kUB2 = 10;       
 kDe = 10;

@@ -60,7 +60,7 @@ switch dataset
         if runone==0
         LowPassFilter
         exp_data = [newdata(1100:end,1)-1.1 newdata(1100:end,2)];
-        close(1)
+        
         end
         runone = 1;
     case 2
@@ -101,7 +101,7 @@ end
 % Ga.GDP + Gbr -- kI3 --> G.GDP
 % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
 % SecM -- delta --> 0
-% SecM + Channel+ <-- kO/kC --> SecM.Channel- This is wrong
+% SecM + Channel+ <-- kO/kC --> SecM.Channel-
 % Mn* + K <-- kK1/kK2 --> Mn*.K
 % Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
 % Mn* + ArrB1 -- kB1 w(n) --> Mn.ArrB1
