@@ -631,7 +631,7 @@ for counter=1:maxcounter
         M(1) = M(1) + 1;
     elseif sum(hw(1:42)) < r && r <= sum(hw(1:43))
         M(5) = M(5) - 1;
-        M(10) = M(10) + 1;
+        M(6) = M(6) + 1;
         
         % M1
         
@@ -643,7 +643,7 @@ for counter=1:maxcounter
         M(6) = M(6) + 1;
     elseif sum(hw(1:45)) < r && r <= sum(hw(1:46))
         M(10) = M(10) - 1;
-        M(17) = M(17) + 1;
+        M(13) = M(13) + 1;
         
         %M2
         
@@ -655,7 +655,7 @@ for counter=1:maxcounter
         M(13) = M(13) + 1;
     elseif sum(hw(1:48)) < r && r <= sum(hw(1:49))
         M(17) = M(17) - 1;
-        M(24) = M(24) + 1;
+        M(20) = M(20) + 1;
         
         %M3
         
@@ -667,7 +667,7 @@ for counter=1:maxcounter
         M(20) = M(20) + 1;
     elseif sum(hw(1:51)) < r && r <= sum(hw(1:52))
         M(24) = M(24) - 1;
-        M(31) = M(31) + 1;
+        M(27) = M(27) + 1;
         
         %M4
         
@@ -679,7 +679,7 @@ for counter=1:maxcounter
         M(27) = M(27) + 1;
     elseif sum(hw(1:54)) < r && r <= sum(hw(1:55))
         M(31) = M(31) - 1;
-        M(38) = M(38) + 1;
+        M(34) = M(34) + 1;
         
         %M5
         
@@ -691,7 +691,7 @@ for counter=1:maxcounter
         M(34) = M(34) + 1;     
     elseif sum(hw(1:57)) < r && r <= sum(hw(1:58))
         M(38) = M(38) - 1;
-        M(45) = M(45) + 1;
+        M(41) = M(41) + 1;
         
         %M6
         
