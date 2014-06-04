@@ -1,6 +1,6 @@
 %% Set initial conditions for Melanopsin.m, Melanopsin2.m,
 %% and Melanopsin2_count.m
-%% Initial values are stored in 'data.mat'
+%% Initial values are stored in 'hwk.mat'
 
 GTP = 1; 
 PIP2 =1.5;
@@ -10,8 +10,30 @@ kmax =6.5; % increase -- increase deactivation, decrease -- decrease deactivatio
 KM =4.5;   % increase -- decrease deactivation, decrease -- increase deactivation
 
 
-kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
-kG2 = .0106; % increase -- shift left, decrease -- shift right
+% kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
+% kG2 = .0106; % increase -- shift left, decrease -- shift right
+% kG3 = .5759; % increase -- nothing clear, decrease -- decrease deactivation
+% kG4 = .5443; % increase -- shfit left, decrease -- shift right, decrease deactivation
+% kG5 = 3.5; %increase-- shift left & faster deactivation for t>40, decrease--shift right & slower deactivation for t>40 
+% kP = 1;% increase --not clear *more runs, decrease --delays activation & changes channel dynamics
+% kI1 = 15;% *increase --increase folds runs faster & faster deactivation equilibrium, decrease -- runs slower 
+% kI2=.6730;% *increase -- shift slightly left, lowers deactivation curve but at same rate, decrease-- increase deactivation curve\ deactivation impossible 
+% kI3=.00004;% increase -- shift right & slower activation , decrease -- shift to right, slow deactivation
+% kS = 16.0733; %increase -- no clear difference, decrease -- shift left
+% kO = 0.08; % increase -- shift right, decrease -- no clear difference 
+% kC = 0.6; % increase -- slows simulation way down shift peak left , decrease -- shift peak up speeds up simulation
+% kk1 = 50;% increase -- no clear change, decrease -- no clear change
+% kk2 = .0861; % increase -- no clear change, decrease -- shift right
+% kk3 = 10.0602; % increase -- no clear change, decrease -- no clear change
+% kB1 = 9.7004; % increase -- shift right, decrease -- higher peak
+% kB2 = 9.905; % increase -- no clear change, decrease -- no clear change
+% 
+% kUB1 = 10;      
+% kUB2 = 10;       
+% kDe = 10;
+
+kG1 = 12/100;  % increase -- nothing, decrease -- nothing 
+kG2 = .02*10; % increase -- shift left, decrease -- shift right
 kG3 = .5759; % increase -- nothing clear, decrease -- decrease deactivation
 kG4 = .5443; % increase -- shfit left, decrease -- shift right, decrease deactivation
 kG5 = 3.5; %increase-- shift left & faster deactivation for t>40, decrease--shift right & slower deactivation for t>40 
@@ -20,36 +42,17 @@ kI1 = 15;% *increase --increase folds runs faster & faster deactivation equilibr
 kI2=.6730;% *increase -- shift slightly left, lowers deactivation curve but at same rate, decrease-- increase deactivation curve\ deactivation impossible 
 kI3=.00004;% increase -- shift right & slower activation , decrease -- shift to right, slow deactivation
 kS = 16.0733; %increase -- no clear difference, decrease -- shift left
-kO = 0.08; % increase -- shift right, decrease -- no clear difference 
-kC = 0.6; % increase -- slows simulation way down shift peak left , decrease -- shift peak up speeds up simulation
-kk1 = 50;% increase -- no clear change, decrease -- no clear change
-kk2 = .0861; % increase -- no clear change, decrease -- shift right
+kO = 0.004; % increase -- shift right, decrease -- no clear difference 
+kC = 0.03; % increase -- slows simulation way down shift peak left , decrease -- shift peak up speeds up simulation
+kk1 = 25*1.5;% increase -- no clear change, decrease -- no clear change
+kk2 = 8; % increase -- no clear change, decrease -- shift right
 kk3 = 10.0602; % increase -- no clear change, decrease -- no clear change
-kB1 = 9.7004; % increase -- shift right, decrease -- higher peak
-kB2 = 9.905; % increase -- no clear change, decrease -- no clear change
+kB1 = 9.7004/100; % increase -- shift right, decrease -- higher peak
+kB2 = 9.905/100; % increase -- no clear change, decrease -- no clear change
 
-% % kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
-% % kG2 = .0106; % increase -- shift left, decrease -- shift right
-% % kG3 = .5759; % increase -- nothing clear, decrease -- decrease deactivation
-% % kG4 = .5443; % increase -- shfit left, decrease -- shift right, decrease deactivation
-% % kG5 = 3.5; %increase-- shift left(135) & faster deactivation for t>40, decrease--shift right & slower deactivation for t>40 
-% % kP = 1;% increase --not clear *more runs, decrease --delays activation & changes channel dynamics
-% % kI1 = 15;% *increase --10 folds runs 3x faster & faster deactivation equilibrium, decrease -- runs 10x slower 
-% % kI2=.6730;% *increase -- shift slightly left, lowers deactivation curve but at same rate, decrease-- increase deactivation curve\ deactivation impossible 
-% % kI3=.00004;% increase -- shift right & slower activation , decrease -- shift to right, slow deactivation
-% % kS = 16.0733;
-% % kO = .08;
-% % kC = .6;
-% % kk1 = 50;%(50 and 25 don't make much difference)
-% % kk2 = .0861;
-% % kk3 = 10.0602;
-% % kB1 = 9.7004;
-% % kB2 = 9.9005;
-
-
-kUB1 = 10;      
-kUB2 = 10;       
-kDe = 10;
+kUB1 = 10/100;      
+kUB2 = 10/100;       
+kDe = 20;
 
 
 X = zeros(1,10);
@@ -57,7 +60,7 @@ M = zeros(1,47);
 
 %% SPECIES: X = [
 %% X(1)           G.GDP 
-X(1) =floor(30);
+X(1) =floor(30); % critical for peak time
 %% X(2)           Ga.GTP
 %% X(3)           Gbg
 %% X(4)           PLC
@@ -136,4 +139,4 @@ M(46)=0;
 %% M(49)                       MP
 M(49)=0;
 
-save('caimage.mat');
+save('hwk.mat');

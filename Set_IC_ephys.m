@@ -7,31 +7,31 @@
 
 GTP = 1; 
 PIP2 =2;
-Ki = 40;
+Ki = 1; % Leave at 1 unnecessary
 ATP = 1;
-kmax =75;
-KM =1;
+kmax =10; % controls SecM degradation
+KM =1;    % controls SecM degradation
 
 
-kG1 =  80.0;
-kG2 =   0.5;
-kG3 =  10.0;
-kG4 =  15.0;
-kG5 =  20;
-kP =    20.0;
-kI1 =   14.8;
-kI2 =   8.0;
-kI3 =   0.050;
-kS  =  10.0;
-kO  =   2;
-kC  =   50;
+kG1 =  10;
+kG2 =  0.2;
+kG3 =  10;
+kG4 =  7.6;
+kG5 =  10.9;
+kP =   5;
+kI1 =  4.8;
+kI2 =  7;
+kI3 =  5;
+kS  =  100;
+kO  =  0.079;
+kC  =  100;
 
 %=======
-kk1 =   15.0;
-kk2 =   15.0;
-kk3 =   50.0;
-kB1 =   50.0;
-kB2 =   50.0;
+kk1 =   15;
+kk2 =   100;
+kk3 =   100;
+kB1 =   100;
+kB2 =   200;
 
 % % kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
 % % kG2 = .0106; % increase -- shift left, decrease -- shift right
@@ -52,16 +52,16 @@ kB2 =   50.0;
 % % kB2 = 9.905; % increase -- no clear change, decrease -- no clear change
 
 
-kUB1 = 10;      
-kUB2 = 10;       
-kDe = 10;
+kUB1 = 1;      
+kUB2 = 1;       
+kDe =  1;
 
 X = zeros(1,10);
 M = zeros(1,49);
 
 %% SPECIES: X = [
 %% X(1)           G.GDP 
-X(1) = floor(30);
+X(1) = floor(39);
 %% X(2)           Ga.GTP
 %% X(3)           Gbg
 %% X(4)           PLC
@@ -81,7 +81,7 @@ X(12)=20;
 
 %% MELANOPSIN COMPLEXES: M = [
 %% M(1)                        M0*
-M(1) = floor(79);
+M(1) = floor(10);
 
 %% M(2)                        M0*.G.GDP
 %% M(3)                        M0*.G

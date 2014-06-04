@@ -1,95 +1,27 @@
-% Melanopsin(totrun,dataset) will run the Gillespie algorithm code
-% for the number of runs specified (totrun) and using the initial values 
-% and deterministic rate constants for the specified dataset (dataset). Later once
+% Melanopsin_Sensitivity(totrun,dataset) will run the Gillespie algorithm code
+% for one run and using the initial values 
+% and stochastic rate constants for the specified dataset (dataset). Later once
 % the optimization code is finished the rate constants used will be from
-% the rates written to file by that routine. The realizations are saved in files called
-% run<number>.mat.
+% the rates written to file by that routine. 
 
-% % function Melanopsin(totrun,dataset,tmax,flashint)
-% % clear all
-% % close all
-totrun=1
-dataset=1
-tmax=15
-flashint=100
-whattha = 0;
-% % clf
-% % %% to set a random seed
-% % rand('seed',sum(100*clock))
-% % %% to set a random seed
-
+function [Time,open_channels] = Melanopsin_Sensitivity(tmax,flashint,LHSmatrix,x)
 %% store time, molecule numbers in every 'time_step' sec for all runs
-% % tmax = 100;     % final time for each run
-time_step=0.12; % maximum time step, before we set as 0.25
-counter =1; % counter counts the number of time iterations.
+time_step=0.25; % maximum time step, before we set as 0.25
 maxcounter=10000000;
-% You record t, M, X in every time interval equal to time_step
-Xstore = zeros(floor(tmax/time_step)+1,12,totrun); 
-Mstore = zeros(floor(tmax/time_step)+1,49,totrun); 
-ttstore = zeros(floor(tmax/time_step)+1,1,totrun);
-% % R1store = zeros(maxcounter,1,totrun);  
-% % R2store = zeros(maxcounter,1,totrun); 
-%% store time, molecule numbers in every 'time_step' sec for all runs
-slowmedown=1.0;
-slowslow = slowmedown;
-slower = 1.0;
-tic;
-runone=0;
-for runnum = 1:totrun
-  
-% case 1 --- store prameters values you want in data.mat
-% case 2 --- store prameters values you want in data.mat
 
-max_chan = 0;       % What are these?
-maxchan_time = 0;   % What are these?
-
+%% You record t, M, X in every time interval equal to time_step
+Xstore = zeros(floor(tmax/time_step)+1,12); 
+Mstore = zeros(floor(tmax/time_step)+1,49); 
+ttstore = zeros(floor(tmax/time_step)+1,1);
 
 no_rxns = 88;                   % (<--- this is hardcode) number of reactions (total)
+%% store time, molecule numbers in every 'time_step' sec for all runs
+slowmedown=1.00;
+tic;
 
 t = 0;
-% % tmax = 15;
 tflash = flashint;                   % Time for second flash
 tjump = tflash;                 % Time between flashes
-
-switch dataset    
-    
-    case 1
-        
-        Set_IC_ephys
-% %         load('ephys.mat')     % electrophysiology
-% %         Edata = dlmread('EphysGraph.csv');
-% %         exp_data = [Edata(1100:end,2)-1.1 Edata(1100:end,5)];
-        if runone==0
-        LowPassFilter
-        exp_data = [newdata(1100:end,1)-1.1 newdata(1100:end,2)];
-        close(1)
-        end
-        runone = 1;
-    case 2
-        Set_ICMulti
-        load('multidata.mat') % multi flash
-    case 3
-        Set_IC_beta1
-        load('beta1.mat')     % overexpressed beta arrestin1
-    case 4
-        Set_IC_beta2
-        load('beta2.mat')     % overexpressed beta arrestin2        
-    otherwise 
-        Set_IC_caimage
-        load('caimage2.mat')   % calcium imaging is the default
-        exp_data = dlmread('Evans_CaWT.csv');
-        
-end
-
-%%%% These have been moved to the initial conditions
-%% erase later
-% % kUB1 = 0;      
-% % kUB2 = 0;       
-% % kDe = 0;
-% % M(49)=0;
-% % X(11)=20;
-% % X(12)=20;
-%% erase later
 
 % MODEL OF MELANOPSIN ACTIVATION
 
@@ -103,7 +35,7 @@ end
 % Ga.GDP + Gbr -- kI3 --> G.GDP
 % PIP2 + PLC*.Ga.GTP -- kS --> SecM + PLC*.Ga.GTP
 % SecM -- delta --> 0
-% SecM + Channel+ <-- kO/kC --> SecM.Channel- This is wrong
+% SecM + Channel+ <-- kO/kC --> SecM.Channel-
 % Mn* + K <-- kK1/kK2 --> Mn*.K
 % Mn*.K + ATP -- kK3 --> Mn+1*.K + ADP
 % Mn* + ArrB1 -- kB1 w(n) --> Mn.ArrB1
@@ -111,6 +43,41 @@ end
 % Mn.ArrB1 -- kUB1 w(n) --> Mp + ArrB1
 % Mn.ArrB2 -- kUB2 w(n) --> Mp + ArrB2
 % Mp -- kDe w(6) --> M0
+
+
+%% set parameters and initial conditions in each run
+Melanopsin_Parameter_settings_LHS;
+
+GTP = LHSmatrix(x,1);
+PIP2 = LHSmatrix(x,2);
+Ki = LHSmatrix(x,3);
+ATP = LHSmatrix(x,4);
+kmax = LHSmatrix(x,5);
+KM = LHSmatrix(x,6);
+
+kG1 = LHSmatrix(x,7); 
+kG2 = LHSmatrix(x,8); 
+kG3 = LHSmatrix(x,9); 
+kG4 = LHSmatrix(x,10);
+kG5 = LHSmatrix(x,11);
+
+kP = LHSmatrix(x,12);
+kI1 = LHSmatrix(x,13);
+kI2 = LHSmatrix(x,14);
+kI3 = LHSmatrix(x,15);
+kS = LHSmatrix(x,16);
+kO = LHSmatrix(x,17);
+kC = LHSmatrix(x,18); 
+
+kk1 = LHSmatrix(x,19); 
+kk2 = LHSmatrix(x,20); 
+kk3 = LHSmatrix(x,21);
+kB1 = LHSmatrix(x,22);
+kB2 = LHSmatrix(x,23);
+kUB1 = LHSmatrix(x,24);
+kUB2 = LHSmatrix(x,25);
+kDe = LHSmatrix(x,26);
+
 
 %% SPECIES: X = [
 %% X(1)           G.GDP
@@ -194,53 +161,42 @@ K = [ kG1,      kG2,        kG3,        kG4*GTP,    kG5, ...
 
 
 %% set initial values
-h_tot=0; % initialize h_tot
 h = zeros(no_rxns,1);  % initialize the hazard vector
-
-%% REASON
-% %% store time, molecule numbers in every 'time_step' sec
-% time_step=0.25; % You record t, M, X in every time interval equal to time_step
-% tstore = zeros(floor(tmax/time_step)+1,1);
-% Xstore = zeros(floor(tmax/time_step)+1,size(X,2));
-% Mstore = zeros(floor(tmax/time_step)+1,size(M,2));
-% ttstore = zeros(floor(tmax/time_step)+1,1);
-%% REASON
-
-
-%% store time, molecule numbers in every 'time_step' sec
-tstore(1,1,runnum) = t;
-Xstore(1,:,runnum) = X;
-Mstore(1,:,runnum) = M;
-ttstore(1,1,runnum) = 0;
+tstore(1,1) = t;
+Xstore(1,:) = X;
+Mstore(1,:) = M;
+ttstore(1,1) = 0;
 prev_t_index = 1; % it stores the previous time intex
-
 %% set initial values
 
 
 %% Build function to account for increase in arrestin binding affinity
 %% with more phosphates bound to melanopsin carboxyl tail.
 
-W = @(n) 1-exp(-n*10);
+% W = @(n) 1-exp(-n*10);
+W = @(n) 1-exp(-n*100);
 
 %% Build function to account for decrease in G-protein activation
 %% with more phosphates bound to melanopsin carboxyl tail.
 
-Y = @(n) exp(-n);
+% Y = @(n) exp(-n);
+Y = @(n) exp(-n/1000);
+Z = @(n) exp(-2*n); % for decreasing phosphorylation rate kK1
 
 %% Begin the algorithm
 
 for counter=1:maxcounter
+    
     % check if the final time has been reached or exceeded
     if t>=tmax
         break;
     end
-    t;
-     if M(1)<20
-         slowmedown=slower;
-     end
+    if M(1)<10
+        slowmedown=1.00;
+    end
     
-     if t>= tflash
-        % signals the next flash
+    if t>= tflash
+       % signals the next flash
        tflash = tflash + tjump;
        % the signal hits all of the melanopsin, potentially activating 10%
        % at any given flash. For a first approximation, assume that the 10%
@@ -272,9 +228,9 @@ for counter=1:maxcounter
     h(6)  = Y(1)*K(1)*M(6)*X(1);
     h(11) = Y(2)*K(1)*M(13)*X(1);
     h(16) = Y(3)*K(1)*M(20)*X(1);
-    h(21) = Y(4)*K(1)*M(27)*X(1);
-    h(26) = Y(5)*K(1)*M(34)*X(1);
-    h(31) = Y(6)*K(1)*M(41)*X(1);
+    h(21) = 0*Y(4)*K(1)*M(27)*X(1);
+    h(26) = 0*Y(5)*K(1)*M(34)*X(1);
+    h(31) = 0*Y(6)*K(1)*M(41)*X(1);
 
     % M0*.G.GDP -- kG2 --> M0* + G.GDP
     h(2)  = K(2)*M(2);         
@@ -282,9 +238,9 @@ for counter=1:maxcounter
     h(7)  = K(2)*M(7);
     h(12) = K(2)*M(14);
     h(17) = K(2)*M(21);
-    h(22) = K(2)*M(28);
-    h(27) = K(2)*M(35);
-    h(32) = K(2)*M(42);
+    h(22) = 0*K(2)*M(28);
+    h(27) = 0*K(2)*M(35);
+    h(32) = 0*K(2)*M(42);
 
     % M0*.G.GDP -- kG3 --> M0*.G + GDP
     h(3)  = K(3)*M(2);  
@@ -292,9 +248,9 @@ for counter=1:maxcounter
     h(8)  = K(3)*M(7);
     h(13) = K(3)*M(14);
     h(18) = K(3)*M(21);
-    h(23) = K(3)*M(28);
-    h(28) = K(3)*M(35);
-    h(33) = K(3)*M(42);
+    h(23) = 0*K(3)*M(28);
+    h(28) = 0*K(3)*M(35);
+    h(33) = 0*K(3)*M(42);
 
     % M0*.G + GTP -- kG4 --> M0*.G.GTP
     h(4)  = K(4)*M(3);        
@@ -302,9 +258,9 @@ for counter=1:maxcounter
     h(9)  = K(4)*M(8);
     h(14) = K(4)*M(15);
     h(19) = K(4)*M(22);
-    h(24) = K(4)*M(29);
-    h(29) = K(4)*M(36);
-    h(34) = K(4)*M(43);
+    h(24) = 0*K(4)*M(29);
+    h(29) = 0*K(4)*M(36);
+    h(34) = 0*K(4)*M(43);
 
     % M0*.G.GTP -- kG5 --> M0* + Ga.GTP + Gbg
     h(5)  = K(5)*M(4);         
@@ -312,9 +268,9 @@ for counter=1:maxcounter
     h(10) = K(5)*M(9);
     h(15) = K(5)*M(16);
     h(20) = K(5)*M(23);
-    h(25) = K(5)*M(30);
-    h(30) = K(5)*M(37);
-    h(35) = K(5)*M(44);
+    h(25) = 0*K(5)*M(30);
+    h(30) = 0*K(5)*M(37);
+    h(35) = 0*K(5)*M(44);
     
 %%
 % PLC and G-protein activation/inactivation
@@ -338,32 +294,32 @@ for counter=1:maxcounter
 %%
 % Kinase Phosphorylation
     
-    h(41) = K(11)*M(1);             % M0* + K -- kk1 --> M0*K 
-    h(42) = K(12)*M(5);             % M0*K -- kk2 --> M0* + K
-    h(43) = K(13)*M(5);             % M0*K + ATP -- kk3 --> M1*K + ADP
+    h(41) = Z(0)*K(11)*M(1);          % M0* + K -- kk1 --> M0*K 
+    h(42) = K(12)*M(5);               % M0*K -- kk2 --> M0* + K
+    h(43) = K(13)*M(5);               % M0*K + ATP -- kk3 --> M1*K + ADP
     
-    h(44) = K(11)*M(6);             % M1* + K -- kk1 --> M1*K 
-    h(45) = K(12)*M(10);            % M1*K -- kk2 --> M1* + K
-    h(46) = K(13)*M(10);            % M1*K + ATP -- kk3 --> M2*K + ADP
+    h(44) = Z(1)*K(11)*M(6);          % M1* + K -- kk1 --> M1*K 
+    h(45) = K(12)*M(10);              % M1*K -- kk2 --> M1* + K
+    h(46) = K(13)*M(10);              % M1*K + ATP -- kk3 --> M2*K + ADP
     
-    h(47) = K(11)*M(13);            % M2* + K -- kk1 --> M2*K 
-    h(48) = K(12)*M(17);            % M2*K -- kk2 --> M2* + K
+    h(47) = Z(2)*K(11)*M(13);         % M2* + K -- kk1 --> M2*K 
+    h(48) = K(12)*M(17);              % M2*K -- kk2 --> M2* + K
     h(49) = K(13)*M(17);            % M2*K + ATP -- kk3 --> M3*K + ADP
     
-    h(50) = K(11)*M(20);            % M3* + K -- kk1 --> M3*K 
+    h(50) = Z(3)*K(11)*M(20);       % M3* + K -- kk1 --> M3*K 
     h(51) = K(12)*M(24);            % M3*K -- kk2 --> M3* + K
-    h(52) = K(13)*M(24);            % M3*K + ATP -- kk3 --> M4*K + ADP
+    h(52) = 0*K(13)*M(24);            % M3*K + ATP -- kk3 --> M4*K + ADP
     
-    h(53) = K(11)*M(27);            % M4* + K -- kk1 --> M4*K 
-    h(54) = K(12)*M(31);            % M4*K -- kk2 --> M4* + K
-    h(55) = K(13)*M(31);            % M4*K + ATP -- kk3 --> M5*K + ADP
+    h(53) = 0*Z(4)*K(11)*M(27);       % M4* + K -- kk1 --> M4*K 
+    h(54) = 0*K(12)*M(31);            % M4*K -- kk2 --> M4* + K
+    h(55) = 0*K(13)*M(31);            % M4*K + ATP -- kk3 --> M5*K + ADP
     
-    h(56) = K(11)*M(34);            % M5* + K -- kk1 --> M5*K 
-    h(57) = K(12)*M(38);            % M5*K -- kk2 --> M5* + K
-    h(58) = K(13)*M(38);            % M5*K + ATP -- kk3 --> M6*K + ADP
+    h(56) = 0*Z(5)*K(11)*M(34);       % M5* + K -- kk1 --> M5*K 
+    h(57) = 0*K(12)*M(38);            % M5*K -- kk2 --> M5* + K
+    h(58) = 0*K(13)*M(38);            % M5*K + ATP -- kk3 --> M6*K + ADP
             
-    h(59) = K(11)*M(41);            % M6* + K -- kk1 --> M6*K 
-    h(60) = K(12)*M(45);            % M6*K -- kk2 --> M6* + K
+    h(59) = 0*Z(6)*K(11)*M(41);       % M6* + K -- kk1 --> M6*K 
+    h(60) = 0*K(12)*M(45);            % M6*K -- kk2 --> M6* + K
     
 %%
 % Arrestin Binding
@@ -377,14 +333,14 @@ for counter=1:maxcounter
     h(65) = W(3)*K(14)*M(20)*X(11)*slowmedown;       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
     h(66) = W(3)*K(15)*M(20)*X(12)*slowmedown;       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
     
-    h(67) = W(4)*K(14)*M(27)*X(11)*slowmedown;       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
-    h(68) = W(4)*K(15)*M(27)*X(12)*slowmedown;       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
+    h(67) = 0*W(4)*K(14)*M(27)*X(11)*slowmedown;       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
+    h(68) = 0*W(4)*K(15)*M(27)*X(12)*slowmedown;       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
     
-    h(69) = W(5)*K(14)*M(34)*X(11)*slowmedown;       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
-    h(70) = W(5)*K(15)*M(34)*X(12)*slowmedown;       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
+    h(69) = 0*W(5)*K(14)*M(34)*X(11)*slowmedown;       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
+    h(70) = 0*W(5)*K(15)*M(34)*X(12)*slowmedown;       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
     
-    h(71) = W(6)*K(14)*M(41)*X(11)*slowmedown;       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
-    h(72) = W(6)*K(15)*M(41)*X(12)*slowmedown;       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
+    h(71) = 0*W(6)*K(14)*M(41)*X(11)*slowmedown;       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
+    h(72) = 0*W(6)*K(15)*M(41)*X(12)*slowmedown;       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
     
 %%
 % SecM degradation
@@ -396,16 +352,16 @@ for counter=1:maxcounter
     h(76) = W(1)*K(20)*M(11);       % M1.ArrB1 -- kUB1 --> MP + ArrB1
     h(77) = W(2)*K(20)*M(18);       % M2.ArrB1 -- kUB1 --> MP + ArrB1
     h(78) = W(3)*K(20)*M(25);       % M3.ArrB1 -- kUB1 --> MP + ArrB1
-    h(79) = W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
-    h(80) = W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
-    h(81) = W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
+    h(79) = 0*W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
+    h(80) = 0*W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
+    h(81) = 0*W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
     
     h(82) = W(1)*K(21)*M(12);       % M1.ArrB2 -- kUB2 --> MP + ArrB2
     h(83) = W(2)*K(21)*M(19);       % M2.ArrB2 -- kUB2 --> MP + ArrB2
     h(84) = W(3)*K(21)*M(26);       % M3.ArrB2 -- kUB2 --> MP + ArrB2
-    h(85) = W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
-    h(86) = W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
-    h(87) = W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
+    h(85) = 0*W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
+    h(86) = 0*W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
+    h(87) = 0*W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
     
     h(88) = K(22)*M(49);       % MP -- kDe --> M0
     
@@ -419,18 +375,11 @@ for counter=1:maxcounter
     h_tot = sum(h);                 % Sum of hazard "bins"
     hw = h/h_tot;                   % Normalized "bins"
     
-     
-    % record random number
-    R1 = rand(1,1);
-    R2 = rand(1,1);
-%     R1store(counter,1,runnum) = R1;  
-%     R2store(counter,1,runnum) = R2; 
-    
     % now pick a random number to step forward in time
     tt = -log(rand(1,1))/h_tot;
     t = t + tt;
     % pick a random number and use the weights to "select" an action
-    r = R2;
+    r = rand(1,1);
     
     
     %% New
@@ -444,17 +393,17 @@ for counter=1:maxcounter
     if 0 <= r && r <= hw(1)
         M(1) = M(1) - 1;           
         X(1) = X(1) - 1;           
-        M(2) = M(2) + 1;           
+        M(2) = M(2) + 1;       
     elseif hw(1) < r && r <= sum(hw(1:2))
         M(2) = M(2) - 1;            
         M(1) = M(1) + 1;           
-        X(1) = X(1) + 1;            
+        X(1) = X(1) + 1;      
     elseif sum(hw(1:2)) < r && r <= sum(hw(1:3))
         M(2) = M(2) - 1;            
-        M(3) = M(3) + 1;           
+        M(3) = M(3) + 1; 
     elseif sum(hw(1:3)) < r && r <= sum(hw(1:4))
         M(3) = M(3) - 1;           
-        M(4) = M(4) + 1;           
+        M(4) = M(4) + 1; 
     elseif sum(hw(1:4)) < r && r <= sum(hw(1:5))
         M(4) = M(4) - 1;
         M(1) = M(1) + 1;
@@ -631,7 +580,7 @@ for counter=1:maxcounter
         M(1) = M(1) + 1;
     elseif sum(hw(1:42)) < r && r <= sum(hw(1:43))
         M(5) = M(5) - 1;
-        M(6) = M(6) + 1;
+        M(10) = M(10) + 1;
         
         % M1
         
@@ -643,7 +592,7 @@ for counter=1:maxcounter
         M(6) = M(6) + 1;
     elseif sum(hw(1:45)) < r && r <= sum(hw(1:46))
         M(10) = M(10) - 1;
-        M(13) = M(13) + 1;
+        M(17) = M(17) + 1;
         
         %M2
         
@@ -655,7 +604,7 @@ for counter=1:maxcounter
         M(13) = M(13) + 1;
     elseif sum(hw(1:48)) < r && r <= sum(hw(1:49))
         M(17) = M(17) - 1;
-        M(20) = M(20) + 1;
+        M(24) = M(24) + 1;
         
         %M3
         
@@ -667,7 +616,7 @@ for counter=1:maxcounter
         M(20) = M(20) + 1;
     elseif sum(hw(1:51)) < r && r <= sum(hw(1:52))
         M(24) = M(24) - 1;
-        M(27) = M(27) + 1;
+        M(31) = M(31) + 1;
         
         %M4
         
@@ -679,7 +628,7 @@ for counter=1:maxcounter
         M(27) = M(27) + 1;
     elseif sum(hw(1:54)) < r && r <= sum(hw(1:55))
         M(31) = M(31) - 1;
-        M(34) = M(34) + 1;
+        M(38) = M(38) + 1;
         
         %M5
         
@@ -688,10 +637,10 @@ for counter=1:maxcounter
         M(38) = M(38) + 1;
     elseif sum(hw(1:56)) < r && r <= sum(hw(1:57))
         M(38) = M(38) - 1;
-        M(34) = M(34) + 1;     
+        M(34) = M(34) + 1;
     elseif sum(hw(1:57)) < r && r <= sum(hw(1:58))
         M(38) = M(38) - 1;
-        M(41) = M(41) + 1;
+        M(45) = M(45) + 1;
         
         %M6
         
@@ -706,49 +655,61 @@ for counter=1:maxcounter
         % M1      
     elseif sum(hw(1:60)) < r && r <= sum(hw(1:61))
         M(6) = M(6) - 1;
+        X(11) = X(11) - 1;
         M(11) = M(11) + 1;
     elseif sum(hw(1:61)) < r && r <= sum(hw(1:62))
         M(6) = M(6) - 1;
+        X(12) = X(12) - 1;
         M(12) = M(12) + 1;
         
         %M2
     elseif sum(hw(1:62)) < r && r <= sum(hw(1:63))
         M(13) = M(13) - 1;
+        X(11) = X(11) - 1;
         M(18) = M(18) + 1;
     elseif sum(hw(1:63)) < r && r <= sum(hw(1:64))
         M(13) = M(13) - 1;
+        X(12) = X(12) - 1;
         M(19) = M(19) + 1;
         
         %M3       
     elseif sum(hw(1:64)) < r && r <= sum(hw(1:65))
         M(20) = M(20) - 1;
+        X(11) = X(11) - 1;
         M(25) = M(25) + 1;
     elseif sum(hw(1:65)) < r && r <= sum(hw(1:66))
         M(20) = M(20) - 1;
+        X(12) = X(12) - 1;
         M(26) = M(26) + 1;
         
         %M4      
     elseif sum(hw(1:66)) < r && r <= sum(hw(1:67))
         M(27) = M(27) - 1;
+        X(11) = X(11) - 1;
         M(32) = M(32) + 1;
     elseif sum(hw(1:67)) < r && r <= sum(hw(1:68))
         M(27) = M(27) - 1;
+        X(12) = X(12) - 1;
         M(33) = M(33) + 1;
         
         %M5
     elseif sum(hw(1:68)) < r && r <= sum(hw(1:69))
         M(34) = M(34) - 1;
+        X(11) = X(11) - 1;
         M(39) = M(39) + 1;
     elseif sum(hw(1:69)) < r && r <= sum(hw(1:70))
         M(34) = M(34) - 1;
+        X(12) = X(12) - 1;
         M(40) = M(40) + 1;
         
         %M6
     elseif sum(hw(1:70)) < r && r <= sum(hw(1:71))
         M(41) = M(41) - 1;
+        X(11) = X(11) - 1;
         M(46) = M(46) + 1;
     elseif sum(hw(1:71)) < r && r <= sum(hw(1:72))
         M(41) = M(41) - 1;
+        X(12) = X(12) - 1;
         M(47) = M(47) + 1;
         
         % SecM degradation
@@ -759,79 +720,66 @@ for counter=1:maxcounter
         
        
     elseif sum(hw(1:75)) < r && r <= sum(hw(1:76))
-        
          M(11) = M(11) - 1;
          X(11) = X(11) + 1;
          M(49) = M(49) + 1;
        
     elseif sum(hw(1:76)) < r && r <= sum(hw(1:77))
-        
          M(18) = M(18) - 1;
          X(11) = X(11) + 1;
          M(49) = M(49) + 1;
        
-    elseif sum(hw(1:77)) < r && r <= sum(hw(1:78))
-        
+    elseif sum(hw(1:77)) < r && r <= sum(hw(1:78))     
          M(25) = M(25) - 1;
          X(11) = X(11) + 1;
          M(49) = M(49) + 1;
         
     elseif sum(hw(1:78)) < r && r <= sum(hw(1:79))
-        
          M(32) = M(32) - 1;
          X(11) = X(11) + 1;
          M(49) = M(49) + 1;
         
-    elseif sum(hw(1:79)) < r && r <= sum(hw(1:80))
-       
+    elseif sum(hw(1:79)) < r && r <= sum(hw(1:80))     
          M(39) = M(39) - 1;
          X(11) = X(11) + 1;
          M(49) = M(49) + 1;
         
-    elseif sum(hw(1:80)) < r && r <= sum(hw(1:81))
-       
+    elseif sum(hw(1:80)) < r && r <= sum(hw(1:81))      
          M(46) = M(46) - 1;
          X(11) = X(11) + 1;
          M(49) = M(49) + 1;
         
     elseif sum(hw(1:81)) < r && r <= sum(hw(1:82))
-       
          M(12) = M(12) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
          
     elseif sum(hw(1:82)) < r && r <= sum(hw(1:83))
-       
          M(19) = M(19) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
   
-    elseif sum(hw(1:83)) < r && r <= sum(hw(1:84))
-        
+    elseif sum(hw(1:83)) < r && r <= sum(hw(1:84))      
          M(26) = M(26) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
 
     elseif sum(hw(1:84)) < r && r <= sum(hw(1:85))
-        
          M(33) = M(33) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
  
-    elseif sum(hw(1:85)) < r && r <= sum(hw(1:86))
-        
+    elseif sum(hw(1:85)) < r && r <= sum(hw(1:86))    
          M(40) = M(40) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
  
     elseif sum(hw(1:86)) < r && r <= sum(hw(1:87))
-        
          M(47) = M(47) - 1;
          X(12) = X(12) + 1;
          M(49) = M(49) + 1;
  
     elseif sum(hw(1:87)) < r && r <= sum(hw(1:88))
-        
          M(48) = M(48) + 1;
          M(49) = M(49) - 1;
          
@@ -842,7 +790,7 @@ for counter=1:maxcounter
     end
     
     %% beginning, graph with Time
-    Time = [0:time_step:tmax]; 
+    Time = (0:time_step:tmax)'; 
     %% beginning, graph with Time
     
     %% store time, molecule numbers in every 'time_step' sec
@@ -862,88 +810,19 @@ for counter=1:maxcounter
     end
     %% 
     
-    
     %% store time, molecule numbers in every 'time_step' sec
     
     if time_index > prev_t_index
         for j = (prev_t_index+1):time_index
-            tstore(j,1,runnum) = t;
-            Xstore(j,:,runnum) = X;
-            Mstore(j,:,runnum) = M;
-            ttstore(j,1,runnum) = tt;
+            tstore(j,1) = t;
+            Xstore(j,:) = X;
+            Mstore(j,:) = M;
+            ttstore(j,1) = tt;
         end
     end
-    prev_t_index = time_index;  
+    prev_t_index = time_index; 
     %% store time, molecule numbers in every 'time_step' sec
-
-    
-% %     if t>19.89
-% %         keyboard;
-% %     end
-% % %    pause(0.2)
-% %     plot_matrx(tic,:) = [t X M];
-% % figure(1)    
-% %     % if the new t < tmax, repeat.  Else plot the results.
-% %     subplot(2,1,1)
-% %     plot(M)
-% %     pause(0.1)
-% %     subplot(2,1,2)
-% %     plot(X)
-% %    axis([0 14 0 100])
-% %    pause(0.1)
-% %    display(X(1))
-   %%display(X(5))
-   %%pause(1)
 
 end % end of one realization
 
-slowmedown=slowslow;
-whattha=whattha+1
-% simstuff = {tstore,Mstore,Xstore};
-% save(sprintf('run%d',runnum),'simstuff')
-save('results.mat','tstore','Time','Mstore','Xstore');%,'R1store','R2store')
-
-end % end of all realizations
-
-%% compute mean and standard deviation
-Mx = mean(Xstore,3); % compute mean
-% '3' means averaging with respect to the 3rd dimension.
-Sx = std(Xstore,0,3); % compute standard deviation, '0' is a flag (do not change it)
-Mm = mean(Mstore,3);
-Sm = std(Mstore,0,3);
-%% compute mean and standard deviation
-
-save('results.mat','Time','tstore','Mstore','Xstore','Mx','Sx','Mm','Sm');%,'R1store','R2store')
-
-
-figure(2)
-plot(exp_data(:,1),exp_data(:,2),'k','LineWidth',4)
-% hold on
-grid on
-axis([0 tmax -0.05 1.05])
-
-%keyboard;
-%% plotting average
-% % figure(1)
-% % plot(Time,Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41));
-% % %axis([0 tmax -1 100]);
-% % xlabel('time (/sec)'); ylabel('# of cells');
-% % figure(2)
-% % plot(Time,Mx(:,8)./(Mx(:,7)+Mx(:,8)))
-figure(2)
-opchan = Mx(:,8)./(Mx(:,7)+Mx(:,8));
-
-% % plot(tstore(:,1,1),opchan./max(opchan),'LineWidth',2,'Color','k')% a ratio of the number of open channels out of the total number of
-% % % a ratio of the number of open channels out of the total number of
-% % % channels
-% % %% plotting average
-% % toc
-hold all
-plot(Time,opchan./max(opchan),'LineWidth',2)% a ratio of the number of open channels out of the total number of
-% hold on
-
-% a ratio of the number of open channels out of the total number of
-% channels
-%% plotting average
-toc
-ExampleFigure
+open_channels = Xstore(:,8);
