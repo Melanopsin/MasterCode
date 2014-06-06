@@ -1,5 +1,5 @@
 Exp_data =dlmread('EphysGraph.csv'); % single flash 
-Time = Exp_data(:,2);
+cTime = Exp_data(:,2);
 Data_store(:,1) = Exp_data(:,1);
 Data_store(:,2) = Exp_data(:,3);
 Data_store(:,3) = Exp_data(:,4);
@@ -12,7 +12,7 @@ Wn = (2/Fs)*fc;
 b = fir1(20,Wn,'low',kaiser(21,3));
 fvtool(b,1,'Fs',Fs);
 y = filter(b,1,Data_store(:,1));
-newdata(:,1)=Time;
+newdata(:,1)=cTime;
 newdata(:,2)=(y-0.1e-10)/(max(y)-0.1e-10);
 
 %plot(Time,Data_store(:,1),'b');
