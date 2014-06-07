@@ -10,9 +10,8 @@ PIP2 =2;
 Ki = 1; % Leave at 1 unnecessary
 ATP = 1;
 kmax =5.5; % controls SecM degradation
-%9.8163
 KM =1;    % controls SecM degradation
-%0.1627
+
 
 kG1 =  10;
 % 100
@@ -46,9 +45,8 @@ kk2 =   100;
 kk3 =   100;
 %1.5754
 kB1 =   100;
-%9.8737
+%
 kB2 =   200;
-%0.0199
 
 % % kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
 % % kG2 = .0106; % increase -- shift left, decrease -- shift right
