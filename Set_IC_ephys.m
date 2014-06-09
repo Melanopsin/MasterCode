@@ -9,46 +9,29 @@ GTP = 1;
 PIP2 =2;
 Ki = 1; % Leave at 1 unnecessary
 ATP = 1;
-kmax =5.5; % controls SecM degradation
-%9.8163
+kmax =10; % controls SecM degradation
 KM =1;    % controls SecM degradation
-%0.1627
+
 
 kG1 =  10;
-% 100
 kG2 =  0.2;
-% 0.0093
 kG3 =  10;
-% 8.4
 kG4 =  7.6;
-% 8.1589
 kG5 =  10.9;
-% 8.0541
 kP =   5;
-% 19.6684
 kI1 =  4.8;
-% 20.5703
 kI2 =  7;
-%28.36
 kI3 =  5;
-%0.3649
 kS  =  100;
-%75.8554
 kO  =  0.079;
-%100.8801
 kC  =  100;
-%4.5832
+
 %=======
 kk1 =   15;
-%9.2099
 kk2 =   100;
-%1.4091
 kk3 =   100;
-%1.5754
 kB1 =   100;
-%9.8737
 kB2 =   200;
-%0.0199
 
 % % kG1 = 6.13;  % increase -- nothing, decrease -- nothing 
 % % kG2 = .0106; % increase -- shift left, decrease -- shift right
