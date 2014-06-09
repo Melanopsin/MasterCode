@@ -1173,6 +1173,6 @@ box on
 hold off
 %% plot mean of reaction_count
 %% check the label one more time and send to Christy
-
+ExampleFigureEphys
 toc
 clear variables
