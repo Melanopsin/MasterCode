@@ -8,9 +8,8 @@
 % % function short_mel(totrun,dataset,tmax,flashint)
 % tmax: final time for each run
 clear all
-close all
 
-dataset=6
+dataset=5
 %% I move the location of the code which save the parameter mat file
 %% so that the file does not save additional variables.
 switch dataset    
@@ -29,15 +28,18 @@ switch dataset
         load('beta1.mat')     % overexpressed beta arrestin1
     case 4
         Set_IC_beta2
-        load('beta2.mat')     % overexpressed beta arrestin2        
+        load('beta2.mat')     % overexpressed beta arrestin2 
+    case 5 
+        Set_IC_clhkah
+        load('clhkah.mat')   % calcium imaging is the default    
     otherwise 
         Set_IC_hwk
         load('hwk.mat')   % calcium imaging is the default
         
 end
 
-totrun=10
-tmax=60
+totrun=5
+tmax=15
 flashint=100
 
 % % clf
@@ -206,13 +208,13 @@ runnum
 %% with more phosphates bound to melanopsin carboxyl tail.
 
 % W = @(n) 1-exp(-n*10);
-W = @(n) 1-exp(-n*100);
+W = @(n) 1-exp(-n*10);
 
 %% Build function to account for decrease in G-protein activation
 %% with more phosphates bound to melanopsin carboxyl tail.
 
-% Y = @(n) exp(-n);
-Y = @(n) exp(-n/1000);
+ Y = @(n) exp(-n);
+%Y = @(n) exp(-n/1000);
 Z = @(n) exp(-2*n); % for decreasing phosphorylation rate kK1
 
 %% Begin the algorithm
@@ -260,9 +262,9 @@ for counter=1:maxcounter
     h(6)  = Y(1)*K(1)*M(6)*X(1);
     h(11) = Y(2)*K(1)*M(13)*X(1);
     h(16) = Y(3)*K(1)*M(20)*X(1);
-    h(21) = 0*Y(4)*K(1)*M(27)*X(1);
-    h(26) = 0*Y(5)*K(1)*M(34)*X(1);
-    h(31) = 0*Y(6)*K(1)*M(41)*X(1);
+    h(21) = Y(4)*K(1)*M(27)*X(1);
+    h(26) = Y(5)*K(1)*M(34)*X(1);
+    h(31) = Y(6)*K(1)*M(41)*X(1);
 
     % M0*.G.GDP -- kG2 --> M0* + G.GDP
     h(2)  = K(2)*M(2);         
@@ -270,9 +272,9 @@ for counter=1:maxcounter
     h(7)  = K(2)*M(7);
     h(12) = K(2)*M(14);
     h(17) = K(2)*M(21);
-    h(22) = 0*K(2)*M(28);
-    h(27) = 0*K(2)*M(35);
-    h(32) = 0*K(2)*M(42);
+    h(22) = K(2)*M(28);
+    h(27) = K(2)*M(35);
+    h(32) = K(2)*M(42);
 
     % M0*.G.GDP -- kG3 --> M0*.G + GDP
     h(3)  = K(3)*M(2);  
@@ -280,9 +282,9 @@ for counter=1:maxcounter
     h(8)  = K(3)*M(7);
     h(13) = K(3)*M(14);
     h(18) = K(3)*M(21);
-    h(23) = 0*K(3)*M(28);
-    h(28) = 0*K(3)*M(35);
-    h(33) = 0*K(3)*M(42);
+    h(23) = K(3)*M(28);
+    h(28) = K(3)*M(35);
+    h(33) = K(3)*M(42);
 
     % M0*.G + GTP -- kG4 --> M0*.G.GTP
     h(4)  = K(4)*M(3);        
@@ -290,9 +292,9 @@ for counter=1:maxcounter
     h(9)  = K(4)*M(8);
     h(14) = K(4)*M(15);
     h(19) = K(4)*M(22);
-    h(24) = 0*K(4)*M(29);
-    h(29) = 0*K(4)*M(36);
-    h(34) = 0*K(4)*M(43);
+    h(24) = K(4)*M(29);
+    h(29) = K(4)*M(36);
+    h(34) = K(4)*M(43);
 
     % M0*.G.GTP -- kG5 --> M0* + Ga.GTP + Gbg
     h(5)  = K(5)*M(4);         
@@ -300,9 +302,9 @@ for counter=1:maxcounter
     h(10) = K(5)*M(9);
     h(15) = K(5)*M(16);
     h(20) = K(5)*M(23);
-    h(25) = 0*K(5)*M(30);
-    h(30) = 0*K(5)*M(37);
-    h(35) = 0*K(5)*M(44);
+    h(25) = K(5)*M(30);
+    h(30) = K(5)*M(37);
+    h(35) = K(5)*M(44);
     
 %%
 % PLC and G-protein activation/inactivation
@@ -326,32 +328,32 @@ for counter=1:maxcounter
 %%
 % Kinase Phosphorylation
     
-    h(41) = Z(0)*K(11)*M(1);          % M0* + K -- kk1 --> M0*K 
+    h(41) = K(11)*M(1);          % M0* + K -- kk1 --> M0*K 
     h(42) = K(12)*M(5);               % M0*K -- kk2 --> M0* + K
     h(43) = K(13)*M(5);               % M0*K + ATP -- kk3 --> M1*K + ADP
     
-    h(44) = Z(1)*K(11)*M(6);          % M1* + K -- kk1 --> M1*K 
+    h(44) = K(11)*M(6);          % M1* + K -- kk1 --> M1*K 
     h(45) = K(12)*M(10);              % M1*K -- kk2 --> M1* + K
     h(46) = K(13)*M(10);              % M1*K + ATP -- kk3 --> M2*K + ADP
     
-    h(47) = Z(2)*K(11)*M(13);         % M2* + K -- kk1 --> M2*K 
+    h(47) = K(11)*M(13);         % M2* + K -- kk1 --> M2*K 
     h(48) = K(12)*M(17);              % M2*K -- kk2 --> M2* + K
     h(49) = K(13)*M(17);            % M2*K + ATP -- kk3 --> M3*K + ADP
     
-    h(50) = Z(3)*K(11)*M(20);       % M3* + K -- kk1 --> M3*K 
+    h(50) = K(11)*M(20);       % M3* + K -- kk1 --> M3*K 
     h(51) = K(12)*M(24);            % M3*K -- kk2 --> M3* + K
-    h(52) = 0*K(13)*M(24);            % M3*K + ATP -- kk3 --> M4*K + ADP
+    h(52) = K(13)*M(24);            % M3*K + ATP -- kk3 --> M4*K + ADP
     
-    h(53) = 0*Z(4)*K(11)*M(27);       % M4* + K -- kk1 --> M4*K 
-    h(54) = 0*K(12)*M(31);            % M4*K -- kk2 --> M4* + K
-    h(55) = 0*K(13)*M(31);            % M4*K + ATP -- kk3 --> M5*K + ADP
+    h(53) = K(11)*M(27);       % M4* + K -- kk1 --> M4*K 
+    h(54) = K(12)*M(31);            % M4*K -- kk2 --> M4* + K
+    h(55) = K(13)*M(31);            % M4*K + ATP -- kk3 --> M5*K + ADP
     
-    h(56) = 0*Z(5)*K(11)*M(34);       % M5* + K -- kk1 --> M5*K 
-    h(57) = 0*K(12)*M(38);            % M5*K -- kk2 --> M5* + K
-    h(58) = 0*K(13)*M(38);            % M5*K + ATP -- kk3 --> M6*K + ADP
+    h(56) = K(11)*M(34);       % M5* + K -- kk1 --> M5*K 
+    h(57) = K(12)*M(38);            % M5*K -- kk2 --> M5* + K
+    h(58) = K(13)*M(38);            % M5*K + ATP -- kk3 --> M6*K + ADP
             
-    h(59) = 0*Z(6)*K(11)*M(41);       % M6* + K -- kk1 --> M6*K 
-    h(60) = 0*K(12)*M(45);            % M6*K -- kk2 --> M6* + K
+    h(59) = K(11)*M(41);       % M6* + K -- kk1 --> M6*K 
+    h(60) = K(12)*M(45);            % M6*K -- kk2 --> M6* + K
     
 %%
 % Arrestin Binding
@@ -365,14 +367,14 @@ for counter=1:maxcounter
     h(65) = W(3)*K(14)*M(20)*X(11)*slowmedown;       % M3* + ArrB1 -- kB1*w(n) --> M3.ArrB1
     h(66) = W(3)*K(15)*M(20)*X(12)*slowmedown;       % M3* + ArrB2 -- kB2*w(n) --> M3.ArrB2
     
-    h(67) = 0*W(4)*K(14)*M(27)*X(11)*slowmedown;       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
-    h(68) = 0*W(4)*K(15)*M(27)*X(12)*slowmedown;       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
+    h(67) = W(4)*K(14)*M(27)*X(11)*slowmedown;       % M4* + ArrB1 -- kB1*w(n) --> M4.ArrB1
+    h(68) = W(4)*K(15)*M(27)*X(12)*slowmedown;       % M4* + ArrB2 -- kB2*w(n) --> M4.ArrB2
     
-    h(69) = 0*W(5)*K(14)*M(34)*X(11)*slowmedown;       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
-    h(70) = 0*W(5)*K(15)*M(34)*X(12)*slowmedown;       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
+    h(69) = W(5)*K(14)*M(34)*X(11)*slowmedown;       % M5* + ArrB1 -- kB1*w(n) --> M5.ArrB1
+    h(70) = W(5)*K(15)*M(34)*X(12)*slowmedown;       % M5* + ArrB2 -- kB2*w(n) --> M5.ArrB2
     
-    h(71) = 0*W(6)*K(14)*M(41)*X(11)*slowmedown;       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
-    h(72) = 0*W(6)*K(15)*M(41)*X(12)*slowmedown;       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
+    h(71) = W(6)*K(14)*M(41)*X(11)*slowmedown;       % M6* + ArrB1 -- kB1*w(n) --> M6.ArrB1
+    h(72) = W(6)*K(15)*M(41)*X(12)*slowmedown;       % M6* + ArrB2 -- kB2*w(n) --> M6.ArrB2
     
 %%
 % SecM degradation
@@ -384,16 +386,16 @@ for counter=1:maxcounter
     h(76) = W(1)*K(20)*M(11);       % M1.ArrB1 -- kUB1 --> MP + ArrB1
     h(77) = W(2)*K(20)*M(18);       % M2.ArrB1 -- kUB1 --> MP + ArrB1
     h(78) = W(3)*K(20)*M(25);       % M3.ArrB1 -- kUB1 --> MP + ArrB1
-    h(79) = 0*W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
-    h(80) = 0*W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
-    h(81) = 0*W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
+    h(79) = W(4)*K(20)*M(32);       % M4.ArrB1 -- kUB1 --> MP + ArrB1
+    h(80) = W(5)*K(20)*M(39);       % M5.ArrB1 -- kUB1 --> MP + ArrB1
+    h(81) = W(6)*K(20)*M(46);       % M6.ArrB1 -- kUB1 --> MP + ArrB1
     
     h(82) = W(1)*K(21)*M(12);       % M1.ArrB2 -- kUB2 --> MP + ArrB2
     h(83) = W(2)*K(21)*M(19);       % M2.ArrB2 -- kUB2 --> MP + ArrB2
     h(84) = W(3)*K(21)*M(26);       % M3.ArrB2 -- kUB2 --> MP + ArrB2
-    h(85) = 0*W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
-    h(86) = 0*W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
-    h(87) = 0*W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
+    h(85) = W(4)*K(21)*M(33);       % M4.ArrB2 -- kUB2 --> MP + ArrB2
+    h(86) = W(5)*K(21)*M(40);       % M5.ArrB2 -- kUB2 --> MP + ArrB2
+    h(87) = W(6)*K(21)*M(47);       % M6.ArrB2 -- kUB2 --> MP + ArrB2
     
     h(88) = K(22)*M(49);       % MP -- kDe --> M0
     
@@ -999,7 +1001,6 @@ for counter=1:maxcounter
     
     %% beginning, graph with Time
     Time = [0:time_step:tmax]; 
-    
     %% beginning, graph with Time
     
     %% store time, molecule numbers in every 'time_step' sec
@@ -1084,22 +1085,20 @@ save('results.mat','Time','tstore','Mstore','Xstore','Mopchan','Sopchan','Mratio
 % % plot(Time,Mm(:,1)+Mm(:,6)+Mm(:,13)+Mm(:,20)+Mm(:,27)+Mm(:,34)+Mm(:,41));
 % % %axis([0 tmax -1 100]);
 % % xlabel('time (/sec)'); ylabel('# of cells');
-LowPassFilter
-Exp_data = [newdata(1100:end,1)-1.1 newdata(1100:end,2)]
-% Exp_data =dlmread('ModifiedData.csv'); % calcium imaging
+
+Exp_data =dlmread('ModifiedData.csv'); % calcium imaging
 % Column1: Time; 
 % Column2: Mel mean; Column3: P-null mean; Column4: P2St/Mel mean; 
 % Column5: P2St/P-null mean; Column6: P1St/Mel mean;
 % Column7: Mel std; Column8: P-null std; Column9: P2St/Mel std; 
 % Column10: P2St/P-null std; Column11: P1St/Mel std;
 Data_Time = Exp_data(:,1);
-%Data_Mean = Exp_data(:,2:6);
-Data_Mean = Exp_data(:,2);
-%Data_Std = Exp_data(:,7:11);
+Data_Mean = Exp_data(:,2:6);
+Data_Std = Exp_data(:,7:11);
 
 figure(2)
 hold on
-%errorbar(Data_Time,Data_Mean(:,1),Data_Std(:,1),'kx') 
+errorbar(Data_Time,Data_Mean(:,1),Data_Std(:,1),'kx') 
 plot(Data_Time,Data_Mean(:,1),'r-','LineWidth',4)
 set(gcf,'color','w');
 grid on
@@ -1107,8 +1106,8 @@ axis([0 tmax -0.05 1.4])
 box on
 
 % errorbar(Time,Mratio,Sratio,'bx') 
-% plot(Time,Mratio+Sratio,'b:','LineWidth',1)
-% plot(Time,Mratio-Sratio,'b:','LineWidth',1)
+%plot(Time,Mratio+Sratio,'b:','LineWidth',1)
+%plot(Time,Mratio-Sratio,'b:','LineWidth',1)
 %% Comment the above line if we hide standard deviations
 plot(Time,Mratio,'g-','LineWidth',4)
 % a ratio of the number of open channels out of the total number of
